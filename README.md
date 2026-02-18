@@ -8,7 +8,7 @@ This is the source code of the is-a.dev Reviewbot! The bot uses [octokit.js](htt
 - A GitHub App subscribed to **Pull Request** events and with the following permissions:
   - Pull requests: Read & write
   - Metadata: Read-only
-- (For local development) A tunnel to expose your local server to the internet (e.g. [smee](https://smee.io/), [ngrok](https://ngrok.com/) or [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/tunnel-guide/local/))
+- (For local development) A tunnel to expose your local server to the internet (e.g. [smee](https://smee.io/), [ngrok](https://ngrok.com/))
 - Your GitHub App Webhook must be configured to receive events at a URL that is accessible from the internet.
 
 ## Setup

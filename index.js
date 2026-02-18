@@ -14,9 +14,9 @@ const appId = process.env.APP_ID
 const privateKeyPath = process.env.PRIVATE_KEY_PATH
 const privateKey = fs.readFileSync(privateKeyPath, 'utf8')
 const secret = process.env.WEBHOOK_SECRET
-const newPRs = fs.readFileSync('./opened.md', 'utf8')
-const mergedPRs = fs.readFileSync('./merged.md', 'utf8')
-const draftPRs = fs.readFileSync('./draft.md', 'utf8')
+const newPRs = fs.readFileSync('./message/opened.md', 'utf8')
+const mergedPRs = fs.readFileSync('./message/merged.md', 'utf8')
+const draftPRs = fs.readFileSync('./message/draft.md', 'utf8')
 
 // Create an authenticated Octokit client authenticated as a GitHub App
 const app = new App({
