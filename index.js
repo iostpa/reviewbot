@@ -41,7 +41,7 @@ app.octokit.log.debug(`Authenticated as '${data.name}'`)
 
 // https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request
 app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
-  console.log(`Received a pull request event for #${payload.pull_request.number}`)
+  console.log(`Received a open pull request event for #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`)
   try {
     if (payload.pull_request.draft === true) {
       await octokit.rest.issues.createComment({
@@ -50,6 +50,7 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
         issue_number: payload.pull_request.number,
         body: draftPRs
       })
+      console.log(`Sent a draft message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`)
     } else {
       await octokit.rest.issues.createComment({
         owner: payload.repository.owner.login,
@@ -57,6 +58,7 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
         issue_number: payload.pull_request.number,
         body: newPRs
       })
+      console.log(`Sent a opened message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`)
     };
   } catch (error) {
     Sentry.captureException(error)
@@ -70,7 +72,7 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
 
 // https://github.com/octokit/webhooks.js/?tab=readme-ov-file#webhook-events
 app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
-  console.log(`Received a pull request event for #${payload.pull_request.number}`)
+  console.log(`Received a closed pull request event for #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`)
   try {
     if (payload.pull_request.merged === true) {
       await octokit.rest.issues.createComment({
@@ -79,6 +81,7 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
         issue_number: payload.pull_request.number,
         body: mergedPRs
       })
+      console.log(`Sent a merged message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`)
     } else { return };
   } catch (error) {
     Sentry.captureException(error)
