@@ -24,7 +24,7 @@ If you haven't done this by now, you need to add the is-a.dev domain to your Clo
 
 ### Other hosting providers
 
-Just make sure you have added the domain to your website. You try to see if there is a guide for your hosting provider at [our documentation](https://docs.is-a.dev/) to see how you can configure it. It's also a good idea to also see your hosting providers' documentation to see how you can add a custom domain.
+Just make sure you have added the domain to your website. Try to see if there is a guide for your hosting provider at [our documentation](https://docs.is-a.dev/) to see how you can configure it. It's also a good idea to see your hosting providers' documentation to see how you can add a custom domain.
 
 ### Webserver (like NGINX, Caddy, Apache and etc.)
 
