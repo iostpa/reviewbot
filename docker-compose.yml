@@ -4,6 +4,6 @@ services:
     restart: always
     env_file: ".env"
     ports:
-      - "1200:1200"
+      - "3000:3000"
     volumes:
       - ./private-key.pem:/app/private-key.pem:ro  # read-only

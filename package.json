@@ -6,7 +6,7 @@
   "description": "An app to assist in the review process of is-a-dev",
   "author": "iostpa",
   "scripts": {
-    "server": "node index.js",
+    "server": "bun index.js",
     "lint": "eslint index.js"
   },
   "devDependencies": {
@@ -16,8 +16,10 @@
     "smee-client": "^5.0.0"
   },
   "dependencies": {
-    "@sentry/node": "^10.40.0",
+    "@fastify/middie": "^9.2.0",
+    "@sentry/bun": "^10.40.0",
     "dotenv": "^17.3.1",
+    "fastify": "^5.7.4",
     "octokit": "^5.0.5"
   }
 }

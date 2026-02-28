@@ -11,8 +11,8 @@ Contributions to this project are [released](https://help.github.com/articles/gi
 ## Submitting a pull request
 
 1. [Fork][fork] and clone the repository
-1. Install the dependencies: `npm install`
-1. Make sure the linter passes on your machine: `npm run lint`
+1. Install the dependencies: `bun install`
+1. Make sure the linter passes on your machine: `bun run lint`. If you want it to fix most/all errors then use `bun run lint --fix`.
 1. Create a new branch: `git checkout -b my-branch-name`
 1. Make your change, and make sure the linter is still happy
 1. Push to your fork and [submit a pull request][pr]
