@@ -142,7 +142,7 @@ app.webhooks.on('workflow_job.completed', async ({ octokit, payload }) => {
                 const failed = `
 # Checks failed!
 
-The checks for the pull request has failed, please check the following logs below this message. If you don't know why it failed, wait for a maintainer to review the pull request, ask in a GitHub issue or ask in the Discord server.
+The checks for the pull request has failed, please check the error logs below this message. If you don't know why it failed or don't know how to fix it, either wait for a maintainer to review the pull request, ask in a [GitHub issue](https://github.com/is-a-dev/register/issues/new/choose) or ask in the [Discord server](https://discord.gg/is-a-dev-830872854677422150).
 
 <details>
 <summary><h3>Error logs</h3></summary>
@@ -152,6 +152,7 @@ ${finalLogs.join('\n').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
 ~~~
 
 </details>
+[Link for error logs](${payload.workflow_job.html_url})
 `;
                 await octokit.rest.issues.createComment({
                     owner:payload.repository.owner.login,
