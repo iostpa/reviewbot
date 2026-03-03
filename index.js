@@ -66,6 +66,7 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
         };
     } catch (error) {
         Sentry.captureException(error);
+        fastify.log.error(error);
         if (error.response) {
             console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
         } else {
@@ -89,6 +90,7 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
         } else { return; };
     } catch (error) {
         Sentry.captureException(error);
+        fastify.log.error(error);
         if (error.response) {
             console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
         } else {
@@ -115,6 +117,7 @@ app.webhooks.on('workflow_run.completed', async ({ octokit, payload }) => {
         } else { return; };
     } catch (error) {
         Sentry.captureException(error);
+        fastify.log.error(error);
         if (error.response) {
             console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
         } else {
@@ -170,6 +173,7 @@ ${finalLogs.join('\n').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
         }
     } catch (error) {
         Sentry.captureException(error);
+        fastify.log.error(error);
         if (error.response) {
             console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
         } else {
@@ -181,6 +185,7 @@ ${finalLogs.join('\n').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
 // Handle errors
 app.webhooks.onError((error) => {
     Sentry.captureException(error);
+    fastify.log.error(error);
     if (error.name === 'AggregateError') {
     // Log Secret verification errors
         console.log(`Error processing request: ${error.event}`);
@@ -192,11 +197,11 @@ app.webhooks.onError((error) => {
 // Launch a web server to listen for GitHub webhooks
 const port = process.env.PORT || 3000;
 const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
-const path = '/api/webhook';
-const localWebhookUrl = `http://${host}:${port}${path}`;
+const webhookPath = '/api/webhook';
+const localWebhookUrl = `http://${host}:${port}${webhookPath}`;
 
 // https://github.com/octokit/webhooks.js/#createnodemiddleware
-const middleware = createNodeMiddleware(app.webhooks, { path });
+const middleware = createNodeMiddleware(app.webhooks, { webhookPath });
 
 const fastify = Fastify({
     logger: false
@@ -204,7 +209,7 @@ const fastify = Fastify({
 await fastify.register(middie);
 fastify.use(middleware);
 
-fastify.listen({ port }, () => {
+await fastify.listen({ port }, () => {
     console.log(`Server is listening for events at: ${localWebhookUrl}`);
     console.log('Press Ctrl + C to quit.');
 });
