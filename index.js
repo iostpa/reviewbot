@@ -207,7 +207,7 @@ const fastify = Fastify({
     logger: false
 });
 await fastify.register(middie);
-fastify.use(middleware);
+fastify.use(webhookPath, middleware);
 
 await fastify.listen({ port }, () => {
     console.log(`Server is listening for events at: ${localWebhookUrl}`);
