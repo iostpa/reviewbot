@@ -7,7 +7,7 @@ on:
     paths:
       - "message/*"
       - "index.js"
-      - "package-lock.json"
+      - "bun.lock"
       - "package.json"
       - "Dockerfile"
 
