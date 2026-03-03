@@ -132,8 +132,13 @@ app.webhooks.on('workflow_job.completed', async ({ octokit, payload }) => {
         if (payload.workflow_job.conclusion === "failure") {
             const actions = await octokit.request(`GET ${payload.workflow_job.run_url}`);
             if (actions.data.event === "pull_request") {
-                const pr = actions.data.pull_requests[0];
-                console.log(`Workflow failed in #${pr.number} on https://github.com/${payload.repository.full_name}, sending failed message!`);
+                const commit = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+                    owner: payload.repository.owner.login,
+                    repo: payload.repository.name,
+                    commit_sha: actions.data.head_sha,
+                });;
+                const pr = commit.data[0].number;
+                console.log(`Workflow failed in #${pr} on https://github.com/${payload.repository.full_name}, sending failed message!`);
                 const logs = await octokit.request(`GET /repos/${payload.repository.owner.login}/${payload.repository.name}/actions/jobs/${payload.workflow_job.id}/logs`);
                 const logsText = logs.data;
                 const removeTime = logsText.split('\n').map(line => line.replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s+/, ''));
@@ -159,12 +164,12 @@ ${finalLogs.join('\n').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
 [Link for error logs](${payload.workflow_job.html_url})
 `;
                 await octokit.rest.issues.createComment({
-                    owner:payload.repository.owner.login,
+                    owner: payload.repository.owner.login,
                     repo: payload.repository.name,
-                    issue_number: pr.number,
+                    issue_number: pr,
                     body: failed
                 });
-                console.log(`Succesfully sent the failed message for #${pr.number} on https://github.com/${payload.repository.full_name}`);
+                console.log(`Succesfully sent the failed message for #${pr} on https://github.com/${payload.repository.full_name}`);
             } else { 
                 return;
             }
