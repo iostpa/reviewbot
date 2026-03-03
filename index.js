@@ -152,6 +152,7 @@ ${finalLogs.join('\n').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
 ~~~
 
 </details>
+
 [Link for error logs](${payload.workflow_job.html_url})
 `;
                 await octokit.rest.issues.createComment({
