@@ -18,7 +18,7 @@ const secret = process.env.WEBHOOK_SECRET;
 const newPRs = fs.readFileSync('./message/opened.md', 'utf8');
 const mergedPRs = fs.readFileSync('./message/merged.md', 'utf8');
 const draftPRs = fs.readFileSync('./message/draft.md', 'utf8');
-const success = fs.readFileSync('./message/success.md', 'utf8');
+//const success = fs.readFileSync('./message/success.md', 'utf8');
 
 Sentry.init({
     dsn: sentryDsn,
@@ -99,6 +99,7 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
     }
 });
 
+/*
 // Check if the workflow ran succesfully
 app.webhooks.on('workflow_run.completed', async ({ octokit, payload }) => {
     try {
@@ -186,6 +187,7 @@ ${finalLogs.join('\n').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
         }
     }
 });
+*/
 
 // Handle errors
 app.webhooks.onError((error) => {
