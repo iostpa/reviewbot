@@ -201,18 +201,18 @@ const webhookPath = '/api/webhook';
 const localWebhookUrl = `http://${host}:${port}${webhookPath}`;
 
 // https://github.com/octokit/webhooks.js/#createnodemiddleware
-const middleware = createNodeMiddleware(app.webhooks, { webhookPath });
+const middleware = createNodeMiddleware(app.webhooks, { path: webhookPath });
 
 const fastify = Fastify({
     logger: false
 });
 await fastify.register(middie);
-fastify.use(webhookPath, middleware);
+fastify.use(middleware);
 
-await fastify.listen({ port, host }, () => {
-    console.log(`Server is listening for events at: ${localWebhookUrl}`);
-    console.log('Press Ctrl + C to quit.');
-});
+await fastify.listen({ port, host });
+
+console.log(`Server is listening for events at: ${localWebhookUrl}`);
+console.log('Press Ctrl + C to quit.');
 
 /*
 Standard node http server (use "import http from 'http' if you want to use this instead of Fastify")
