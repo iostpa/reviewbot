@@ -19,7 +19,7 @@
     "@fastify/middie": "^9.3.1",
     "@sentry/bun": "^10.45.0",
     "dotenv": "^17.3.1",
-    "fastify": "^5.8.2",
+    "fastify": "^5.8.4",
     "octokit": "^5.0.5"
   }
 }
