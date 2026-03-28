@@ -8,3 +8,4 @@ LICENSE
 .env.example
 .github
 CONTRIBUTING.md
+renovate.json
