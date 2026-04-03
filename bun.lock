@@ -7,7 +7,7 @@
       "dependencies": {
         "@fastify/middie": "^9.3.1",
         "@sentry/bun": "^10.47.0",
-        "dotenv": "^17.3.1",
+        "dotenv": "^17.4.0",
         "fastify": "^5.8.4",
         "octokit": "^5.0.5",
       },
@@ -244,7 +244,7 @@
 
     "dequal": ["dequal@2.0.3", "", {}, "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA=="],
 
-    "dotenv": ["dotenv@17.3.1", "", {}, ""],
+    "dotenv": ["dotenv@17.4.0", "", {}, "sha512-kCKF62fwtzwYm0IGBNjRUjtJgMfGapII+FslMHIjMR5KTnwEmBmWLDRSnc3XSNP8bNy34tekgQyDT0hr7pERRQ=="],
 
     "escape-string-regexp": ["escape-string-regexp@4.0.0", "", {}, "sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA=="],
 
