@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@fastify/middie": "^9.3.1",
-    "@sentry/bun": "^10.46.0",
+    "@sentry/bun": "^10.47.0",
     "dotenv": "^17.3.1",
     "fastify": "^5.8.4",
     "octokit": "^5.0.5"
