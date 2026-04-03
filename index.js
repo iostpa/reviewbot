@@ -26,6 +26,7 @@ Sentry.init({
     tracesSampleRate: 1.0, // Capture 100% of the transactions
     // Enable logs to be sent to Sentry
     enableLogs: true,
+    integrations: [Sentry.bunRuntimeMetricsIntegration()],
 });
 
 // Create an authenticated Octokit client authenticated as a GitHub App
