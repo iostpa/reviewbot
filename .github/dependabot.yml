@@ -9,6 +9,9 @@ updates:
     - package-ecosystem: "bun" # See documentation for possible values
       target-branch: "main"
       directory: "/" # Location of package manifests
+      multi-ecosystem-group: "infrastructure"
+      
     - package-ecosystem: "github-actions"
       target-branch: "main"
       directory: "/.github/workflows"
+      multi-ecosystem-group: "infrastructure"
