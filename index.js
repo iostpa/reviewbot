@@ -18,7 +18,6 @@ const secret = process.env.WEBHOOK_SECRET;
 const newPRs = fs.readFileSync('./message/opened.md', 'utf8');
 const mergedPRs = fs.readFileSync('./message/merged.md', 'utf8');
 const draftPRs = fs.readFileSync('./message/draft.md', 'utf8');
-//const success = fs.readFileSync('./message/success.md', 'utf8');
 
 Sentry.init({
     dsn: sentryDsn,
@@ -99,96 +98,6 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
         }
     }
 });
-
-/*
-// Check if the workflow ran succesfully
-app.webhooks.on('workflow_run.completed', async ({ octokit, payload }) => {
-    try {
-        if (payload.workflow_run.event === "pull_request") {
-            const pr = payload.workflow_run.pull_requests[0];
-            if (payload.workflow_run.conclusion === "success") {
-                console.log(`Workflow passed in #${pr.number} on https://github.com/${payload.repository.full_name}, sending success message!`); 
-                await octokit.rest.issues.createComment({
-                    owner:payload.repository.owner.login,
-                    repo: payload.repository.name,
-                    issue_number: pr.number,
-                    body: success
-                });
-                console.log(`Succesfully sent the success message for #${pr.number} on https://github.com/${payload.repository.full_name}`);
-            } else { return; };
-        } else { return; };
-    } catch (error) {
-        Sentry.captureException(error);
-        fastify.log.error(error);
-        if (error.response) {
-            console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
-        } else {
-            console.error(error);
-        }
-    }
-});
-
-// Check if the workflow failed
-app.webhooks.on('workflow_job.completed', async ({ octokit, payload }) => {
-    try {
-        if (payload.workflow_job.conclusion === "failure") {
-            const actions = await octokit.request(`GET ${payload.workflow_job.run_url}`);
-            if (actions.data.event === "pull_request") {
-                const commit = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
-                    owner: payload.repository.owner.login,
-                    repo: payload.repository.name,
-                    commit_sha: actions.data.head_sha,
-                });;
-                const pr = commit.data[0].number;
-                console.log(`Workflow failed in #${pr} on https://github.com/${payload.repository.full_name}, sending failed message!`);
-                const logs = await octokit.request(`GET /repos/${payload.repository.owner.login}/${payload.repository.name}/actions/jobs/${payload.workflow_job.id}/logs`);
-                const logsText = logs.data;
-                const removeTime = logsText.split('\n').map(line => line.replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s+/, ''));
-                const start1 = removeTime.findIndex(line => line.includes("##[group]Run npx ava tests/*.test.js --timeout=1m"));
-                const start2 = removeTime.findIndex((line, i) => i > start1 && line.includes("##[endgroup]"));
-                const end = removeTime.findIndex(line => line.includes("##[error]Process completed with exit code 1."));
-                const finalLogs = removeTime.slice(start2 + 2, end);
-                // did this to make my life easier
-                const failed = `
-# Checks failed!
-
-The checks for the pull request has failed, please check the error logs below this message. If you don't know why it failed or don't know how to fix it, either wait for a maintainer to review the pull request, ask in a [GitHub issue](https://github.com/is-a-dev/register/issues/new/choose) or ask in the [Discord server](https://discord.gg/is-a-dev-830872854677422150).
-
-<details>
-<summary><h3>Error logs</h3></summary>
-
-~~~
-${finalLogs.join('\n').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
-~~~
-
-</details>
-
-[Link for error logs](${payload.workflow_job.html_url})
-`;
-                await octokit.rest.issues.createComment({
-                    owner: payload.repository.owner.login,
-                    repo: payload.repository.name,
-                    issue_number: pr,
-                    body: failed
-                });
-                console.log(`Succesfully sent the failed message for #${pr} on https://github.com/${payload.repository.full_name}`);
-            } else { 
-                return;
-            }
-        } else {
-            return;
-        }
-    } catch (error) {
-        Sentry.captureException(error);
-        fastify.log.error(error);
-        if (error.response) {
-            console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
-        } else {
-            console.error(error);
-        }
-    }
-});
-*/
 
 // Handle errors
 app.webhooks.onError((error) => {

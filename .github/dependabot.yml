@@ -1,11 +1,14 @@
 version: 2
+
+multi-ecosystem-groups:
+  infrastructure:
+    schedule:
+      interval: "daily"
+
 updates:
     - package-ecosystem: "bun" # See documentation for possible values
       target-branch: "main"
       directory: "/" # Location of package manifests
-      schedule:
-          interval: "daily"
     - package-ecosystem: "github-actions"
+      target-branch: "main"
       directory: "/.github/workflows"
-      schedule:
-        interval: "weekly"
