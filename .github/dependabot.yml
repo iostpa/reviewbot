@@ -6,9 +6,19 @@ updates:
       directory: "/" # Location of package manifests
       schedule:
           interval: "daily"
+      groups:
+        dependencies:
+            applies-to: version-updates
+            patterns:
+                - "*"
 
     - package-ecosystem: "github-actions"
       target-branch: "main"
       directory: "/.github/workflows"
       schedule:
         interval: "daily"
+      groups:
+        dependencies:
+            applies-to: version-updates
+            patterns:
+                - "*"
