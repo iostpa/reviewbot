@@ -11,14 +11,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.1.0",
+    "eslint": "^10.2.0",
     "globals": "^17.4.0",
     "smee-client": "^5.0.0"
   },
   "dependencies": {
     "@fastify/middie": "^9.3.1",
-    "@sentry/bun": "^10.47.0",
-    "dotenv": "^17.4.0",
+    "@sentry/bun": "^10.48.0",
+    "dotenv": "^17.4.1",
     "fastify": "^5.8.4",
     "octokit": "^5.0.5"
   }
