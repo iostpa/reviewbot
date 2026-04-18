@@ -16,7 +16,7 @@ Just follow the steps below and you can start using your domain!
     
 ### Vercel
 
-You may have to verify the domain so that you can succesfully add the domain to your Vercel website; if you have done that already, the domain should already be connected! If it hasn't, go to the Domain section and click on "Refresh" to see if it works.
+You may have to verify the domain so that you can successfully add the domain to your Vercel website; if you have done that already, the domain should already be connected! If it hasn't, go to the "Domains" section in your project's dashboard and click on "Refresh" to see if it works. If you need to verify the domain with Vercel then please follow our Vercel guide [here](https://docs.is-a.dev/guides/vercel/#creating-the-domain).
 
 ### Cloudflare Pages
 
