@@ -18,6 +18,7 @@ const secret = process.env.WEBHOOK_SECRET;
 const newPRs = fs.readFileSync('./message/opened.md', 'utf8');
 const mergedPRs = fs.readFileSync('./message/merged.md', 'utf8');
 const draftPRs = fs.readFileSync('./message/draft.md', 'utf8');
+const ignoreLabels = ["maintainer"];
 
 Sentry.init({
     dsn: sentryDsn,
@@ -47,9 +48,19 @@ app.octokit.log.debug(`Authenticated as '${data.name}'`);
 app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
     console.log(`Received a open pull request event for #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
     try {
+        const labels = await octokit.rest.issues.listLabelsOnIssue({
+            owner: payload.repository.owner.login,
+            repo: payload.repository.name, 
+            issue_number: payload.pull_request.number
+        });
+        const allLabels = labels.data.map((label) => label.name);
+        if (ignoreLabels.some((label) => allLabels.includes(label))) {
+            console.log(`#${payload.pull_request.number} from https://github.com/${payload.repository.full_name} is by a maintainer, skipping pull request.`)
+            return;
+        } 
         if (payload.pull_request.draft === true) {
             await octokit.rest.issues.createComment({
-                owner:payload.repository.owner.login,
+                owner: payload.repository.owner.login,
                 repo: payload.repository.name,
                 issue_number: payload.pull_request.number,
                 body: draftPRs
@@ -64,6 +75,7 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
             });
             console.log(`Sent a opened message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
         };
+        ;
     } catch (error) {
         Sentry.captureException(error);
         fastify.log.error(error);
@@ -80,12 +92,22 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
     console.log(`Received a closed pull request event for #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
     try {
         if (payload.pull_request.merged === true) {
+            const labels = await octokit.rest.issues.listLabelsOnIssue({
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name, 
+                issue_number: payload.pull_request.number
+            });
+            const allLabels = labels.data.map((label) => label.name);
+            if (ignoreLabels.some((label) => allLabels.includes(label))) {
+                return;
+            } 
             await octokit.rest.issues.createComment({
-                owner:payload.repository.owner.login,
+                owner: payload.repository.owner.login,
                 repo: payload.repository.name,
                 issue_number: payload.pull_request.number,
                 body: mergedPRs
-            });
+            }); 
+            ;
             console.log(`Sent a merged message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
         } else { return; };
     } catch (error) {
