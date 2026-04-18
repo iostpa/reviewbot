@@ -29,12 +29,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GHCR_TOKEN }}
-      - name: Login to git.iostpa.com
-        uses: docker/login-action@v4
-        with:
-          registry: git.iostpa.com
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.FORGEJO_TOKEN }}
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v7
         with:
@@ -42,4 +36,3 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/reviewbot:latest
-            git.iostpa.com/${{ github.repository_owner }}/reviewbot:latest
