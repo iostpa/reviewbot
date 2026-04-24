@@ -1,14 +1,8 @@
-name: Publish release docker image
+name: Publish Release Docker Image
 
 on:
   release:
     types: [published]
-    paths:
-      - "message/*"
-      - "index.js"
-      - "bun.lock"
-      - "package.json"
-      - "Dockerfile"
 
 jobs:
   Deploy:
