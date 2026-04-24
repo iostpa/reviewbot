@@ -29,12 +29,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.MAIN_TOKEN }}
-      - name: Login to git.iostpa.com
-        uses: docker/login-action@v4
-        with:
-          registry: git.iostpa.com
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.MIRROR_TOKEN }}
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v6
