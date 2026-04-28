@@ -18,7 +18,11 @@ const secret = process.env.WEBHOOK_SECRET;
 const newPRs = fs.readFileSync('./message/opened.md', 'utf8');
 const mergedPRs = fs.readFileSync('./message/merged.md', 'utf8');
 const draftPRs = fs.readFileSync('./message/draft.md', 'utf8');
+const lowPriorityMessage = fs.readFileSync('./message/label/lowpriority.md', 'utf8');
 const ignoreLabels = ["maintainer"];
+const statusLabels = ["status: low priority", "status: needs preview", "status: denied"];
+const reasonLabels = ["reason: abuse risk", "reason: commercial usage", "reason: impersonation", "reason: inaccessible website", "reason: incomplete pr", "reason: incomplete website", "reason: invalid file", "reason: invalid records", "reason: invalid social", "reason: merge conflict", "reason: not dev related", "reason: nsfw", "reason: other", "reason: unauthorized"];
+const listOfLabels = [];
 
 Sentry.init({
     dsn: sentryDsn,
@@ -55,7 +59,7 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
         });
         const allLabels = labels.data.map((label) => label.name);
         if (ignoreLabels.some((label) => allLabels.includes(label))) {
-            console.log(`#${payload.pull_request.number} from https://github.com/${payload.repository.full_name} is by a maintainer, skipping pull request.`)
+            console.log(`#${payload.pull_request.number} from https://github.com/${payload.repository.full_name} is by a maintainer, skipping pull request.`);
             return;
         } 
         if (payload.pull_request.draft === true) {
@@ -84,6 +88,124 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
         } else {
             console.error(error);
         }
+    }
+});
+
+
+// to do: https://stackoverflow.com/questions/33289726/combination-of-async-function-await-settimeout
+app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
+    let preview, denied, lowpriority;
+    if (payload.pull_request.label.name === statusLabels[1]){
+        preview = true;
+    } else if (payload.pull_request.label.name === statusLabels[2]) {
+        denied = true;
+    } else if (payload.pull_request.label.name === statusLabels[0]) {
+        lowpriority = true;
+    }
+
+    if (denied === true) {
+        try {
+            // timeout so that it creates a little time window for the maintainer to add the rest of the labels
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            const data = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                pull_number: payload.pull_request.number
+            });
+            const jsonData = JSON.parse(data);
+            const labelData = jsonData.labels;
+            for (let i in labelData) {
+                if (labelData[i].name) {
+                    listOfLabels.append(labelData[i].name);
+                }
+            }
+
+            // start adding the messages
+            const allMessages = [];
+            for (let i in listOfLabels) {
+                if (listOfLabels.includes(reasonLabels[i])) {
+                    let reason = reasonLabels[i].replace(/reason:\s/i, '').replace(/\s+/i, '-');
+                    let message = fs.readFileSync(`./message/label/${reason}.md`, 'utf8');
+                    allMessages.append(message);
+                }
+            }
+            await octokit.rest.issues.createComment({
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                issue_number: payload.pull_request.number,
+                body: allMessages
+            }); 
+            console.log(`Sent reason messages and closed pull request at ${payload.pull_request.number} from ${payload.repository.name}`);
+        } catch (error) {
+            Sentry.captureException(error);
+            fastify.log.error(error);
+            if (error.response) {
+                console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+            } else {
+                console.error(error);
+            }
+        };
+    } else if (preview === true) {
+        try {
+            // timeout so that it creates a little time window for the maintainer to add the rest of the labels
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            const data = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                pull_number: payload.pull_request.number
+            });
+            const jsonData = JSON.parse(data);
+            const labelData = jsonData.labels;
+            for (let i in labelData) {
+                if (labelData[i].name) {
+                    listOfLabels.append(labelData[i].name);
+                }
+            }
+
+            // start adding the messages
+            const allMessages = [];
+            // allMessages.append(fs.readFileSync(`./message/label/inaccessible-website.md`, 'utf8'))
+            for (let i in listOfLabels) {
+                if (listOfLabels.includes(reasonLabels[i])) {
+                    let reason = reasonLabels[i].replace(/reason:\s/i, '').replace(/\s+/i, '-');
+                    let message = fs.readFileSync(`./message/label/${reason}.md`, 'utf8');
+                    allMessages.append(message);
+                }
+            }
+            await octokit.rest.issues.createComment({
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                issue_number: payload.pull_request.number,
+                body: allMessages
+            }); 
+            console.log(`Sent reason messages and closed pull request at ${payload.pull_request.number} from ${payload.repository.name}`);
+        } catch (error) {
+            Sentry.captureException(error);
+            fastify.log.error(error);
+            if (error.response) {
+                console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+            } else {
+                console.error(error);
+            }
+        };
+    } else if (lowpriority === true) {
+        try {
+            await octokit.rest.issues.createComment({
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                issue_number: payload.pull_request.number,
+                body: lowPriorityMessage
+            });
+            console.log(`Sent low priority message to ${payload.pull_request.number} from ${payload.repository.name}`);
+        } catch (error) {
+            Sentry.captureException(error);
+            fastify.log.error(error);
+            if (error.response) {
+                console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+            } else {
+                console.error(error);
+            }
+        };
     }
 });
 
