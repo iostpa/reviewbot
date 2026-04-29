@@ -95,11 +95,11 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
 // to do: https://stackoverflow.com/questions/33289726/combination-of-async-function-await-settimeout
 app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
     let preview, denied, lowpriority;
-    if (payload.pull_request.label.name === statusLabels[1]){
+    if (payload.label.name === statusLabels[1]){
         preview = true;
-    } else if (payload.pull_request.label.name === statusLabels[2]) {
+    } else if (payload.label.name === statusLabels[2]) {
         denied = true;
-    } else if (payload.pull_request.label.name === statusLabels[0]) {
+    } else if (payload.label.name === statusLabels[0]) {
         lowpriority = true;
     }
 
@@ -112,30 +112,47 @@ app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
                 repo: payload.repository.name,
                 pull_number: payload.pull_request.number
             });
-            const jsonData = JSON.parse(data);
-            const labelData = jsonData.labels;
+            const labelData = data.data.labels;
             for (let i in labelData) {
                 if (labelData[i].name) {
-                    listOfLabels.append(labelData[i].name);
+                    listOfLabels.push(labelData[i].name);
                 }
             }
 
             // start adding the messages
             const allMessages = [];
             for (let i in listOfLabels) {
-                if (listOfLabels.includes(reasonLabels[i])) {
-                    let reason = reasonLabels[i].replace(/reason:\s/i, '').replace(/\s+/i, '-');
-                    let message = fs.readFileSync(`./message/label/${reason}.md`, 'utf8');
-                    allMessages.append(message);
-                }
+                if (reasonLabels.includes(listOfLabels[i])) {
+                    let initialReason = listOfLabels[i].toString().replace(/reason:\s/i, '');
+                    let finalReason = initialReason.replace(/\s+/g, '-');
+                    let message = fs.readFileSync(`./message/label/${finalReason}.md`, 'utf8');
+                    allMessages.push(message);
+                }   
             }
+            const labelMessages = allMessages.join('\n\n');
+            const body = `
+# Pull Request Closed
+
+This pull request got closed because the maintainer thinks your pull request is invalid, here's the reasons why your pull request is invalid.
+
+${labelMessages}
+
+If you have any other questions, please create an issue or ask in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
+
+`
             await octokit.rest.issues.createComment({
                 owner: payload.repository.owner.login,
                 repo: payload.repository.name,
                 issue_number: payload.pull_request.number,
-                body: allMessages
-            }); 
-            console.log(`Sent reason messages and closed pull request at ${payload.pull_request.number} from ${payload.repository.name}`);
+                body: body
+            });
+            await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                pull_number: payload.pull_request.number,
+                state: 'closed',
+            });
+            console.log(`Sent reason messages and closed pull request at #${payload.pull_request.number} from ${payload.repository.name}`);
         } catch (error) {
             Sentry.captureException(error);
             fastify.log.error(error);
@@ -154,31 +171,48 @@ app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
                 repo: payload.repository.name,
                 pull_number: payload.pull_request.number
             });
-            const jsonData = JSON.parse(data);
-            const labelData = jsonData.labels;
+            const labelData = data.data.labels;
             for (let i in labelData) {
                 if (labelData[i].name) {
-                    listOfLabels.append(labelData[i].name);
+                    listOfLabels.push(labelData[i].name);
                 }
             }
 
             // start adding the messages
             const allMessages = [];
-            // allMessages.append(fs.readFileSync(`./message/label/inaccessible-website.md`, 'utf8'))
             for (let i in listOfLabels) {
-                if (listOfLabels.includes(reasonLabels[i])) {
-                    let reason = reasonLabels[i].replace(/reason:\s/i, '').replace(/\s+/i, '-');
-                    let message = fs.readFileSync(`./message/label/${reason}.md`, 'utf8');
-                    allMessages.append(message);
-                }
+                if (reasonLabels.includes(listOfLabels[i])) {
+                    let initialReason = listOfLabels[i].toString().replace(/reason:\s/i, '');
+                    let finalReason = initialReason.replace(/\s+/g, '-');
+                    let message = fs.readFileSync(`./message/label/${finalReason}.md`, 'utf8');
+                    allMessages.push(message);
+                }   
             }
+
+            const labelMessages = allMessages.join('\n\n');
+            const body = `
+# Pull Request Closed
+
+This pull request got closed because the maintainer thinks your pull request is invalid, here's the reasons why your pull request is invalid.
+
+${labelMessages}
+
+If you have any other questions, please create an issue or ask in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
+
+`
             await octokit.rest.issues.createComment({
                 owner: payload.repository.owner.login,
                 repo: payload.repository.name,
                 issue_number: payload.pull_request.number,
-                body: allMessages
-            }); 
-            console.log(`Sent reason messages and closed pull request at ${payload.pull_request.number} from ${payload.repository.name}`);
+                body: body
+            });
+            await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                pull_number: payload.pull_request.number,
+                state: 'closed',
+            });
+            console.log(`Sent reason messages and closed pull request at #${payload.pull_request.number} from ${payload.repository.name}`);
         } catch (error) {
             Sentry.captureException(error);
             fastify.log.error(error);
