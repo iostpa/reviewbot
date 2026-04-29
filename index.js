@@ -133,11 +133,11 @@ app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
             const body = `
 # Pull Request Closed
 
-This pull request got closed because the maintainer thinks your pull request is invalid, here's the reasons why your pull request is invalid.
+This pull request was closed for the following reasons which the reviewing maintainer believes apply to your request:
 
 ${labelMessages}
 
-If you have any other questions, please create an issue or ask in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
+If you have any further questions, please create an issue or ask our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
 
 `
             await octokit.rest.issues.createComment({
@@ -186,8 +186,13 @@ If you have any other questions, please create an issue or ask in the [Discord s
                     let finalReason = initialReason.replace(/\s+/g, '-');
                     let message = fs.readFileSync(`./message/label/${finalReason}.md`, 'utf8');
                     allMessages.push(message);
-                }   
+                }
             }
+
+            if (preview === true && !listOfLabels.includes("reason: inaccessible website")) {
+                let message = fs.readFileSync(`./message/label/inaccessible-website.md`, 'utf8');
+                allMessages.push(message);
+            };
 
             const labelMessages = allMessages.join('\n\n');
             const body = `
