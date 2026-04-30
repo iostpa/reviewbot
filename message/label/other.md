@@ -1,2 +1,2 @@
 ### Other
-other (need to finish but this is placeholder text)
+The maintainer has a different reason as to why the pull request should be closed. Please read the maintainer's comment if you haven't done that already.
