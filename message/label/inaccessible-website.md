@@ -1,1 +1,2 @@
-inaccessible website
+### Inaccessible Website
+Your website is inaccessible. This means that at the time of review, the responsible maintainer was unable to access your website and was met with an error. If it is not possible for it to be accessible immediately via a link, it is *mandatory* to provide a **preview** of your website in image or video form.

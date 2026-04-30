@@ -129,65 +129,6 @@ app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
                     allMessages.push(message);
                 }   
             }
-            const labelMessages = allMessages.join('\n\n');
-            const body = `
-# Pull Request Closed
-
-This pull request was closed for the following reasons which the reviewing maintainer believes apply to your request:
-
-${labelMessages}
-
-If you have any further questions, please create an issue or ask our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
-
-`
-            await octokit.rest.issues.createComment({
-                owner: payload.repository.owner.login,
-                repo: payload.repository.name,
-                issue_number: payload.pull_request.number,
-                body: body
-            });
-            await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
-                owner: payload.repository.owner.login,
-                repo: payload.repository.name,
-                pull_number: payload.pull_request.number,
-                state: 'closed',
-            });
-            console.log(`Sent reason messages and closed pull request at #${payload.pull_request.number} from ${payload.repository.name}`);
-        } catch (error) {
-            Sentry.captureException(error);
-            fastify.log.error(error);
-            if (error.response) {
-                console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
-            } else {
-                console.error(error);
-            }
-        };
-    } else if (preview === true) {
-        try {
-            // timeout so that it creates a little time window for the maintainer to add the rest of the labels
-            await new Promise(resolve => setTimeout(resolve, 5000));
-            const data = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
-                owner: payload.repository.owner.login,
-                repo: payload.repository.name,
-                pull_number: payload.pull_request.number
-            });
-            const labelData = data.data.labels;
-            for (let i in labelData) {
-                if (labelData[i].name) {
-                    listOfLabels.push(labelData[i].name);
-                }
-            }
-
-            // start adding the messages
-            const allMessages = [];
-            for (let i in listOfLabels) {
-                if (reasonLabels.includes(listOfLabels[i])) {
-                    let initialReason = listOfLabels[i].toString().replace(/reason:\s/i, '');
-                    let finalReason = initialReason.replace(/\s+/g, '-');
-                    let message = fs.readFileSync(`./message/label/${finalReason}.md`, 'utf8');
-                    allMessages.push(message);
-                }
-            }
 
             if (preview === true && !listOfLabels.includes("reason: inaccessible website")) {
                 let message = fs.readFileSync(`./message/label/inaccessible-website.md`, 'utf8');
@@ -198,13 +139,16 @@ If you have any further questions, please create an issue or ask our team in the
             const body = `
 # Pull Request Closed
 
-This pull request got closed because the maintainer thinks your pull request is invalid, here's the reasons why your pull request is invalid.
+This pull request was closed for the following reasons which the reviewing maintainer believes apply to your request:
 
+---
 ${labelMessages}
 
-If you have any other questions, please create an issue or ask in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
+---
 
-`
+If you have any further questions, please create an issue or ask our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
+
+`;
             await octokit.rest.issues.createComment({
                 owner: payload.repository.owner.login,
                 repo: payload.repository.name,

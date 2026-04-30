@@ -1,1 +1,2 @@
-nsfw
+### NSFW
+Your webpage contains NSFW ("Not Safe For Work") content. This usually refers to pornography, gore, or other disturbing content not suitable for children. This is explicitly prohibited in our [Terms of Service](https://is-a.dev/terms).

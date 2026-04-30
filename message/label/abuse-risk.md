@@ -1,1 +1,2 @@
-abuse risk
+### Abuse Risk
+We believe this pull request risks the abuse of our service. One possible reason we might have reached this conclusion is that there is a risk of malware or malicious content on your website, or other security issues. Another possible reason is that you are hosting copyright infringing material; please ensure that and all content on your website respects copyright laws. Piracy and infringing on third-party rights is prohibited per our [Terms of Service](https://is-a.dev/terms).
