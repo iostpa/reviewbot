@@ -91,8 +91,7 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
     }
 });
 
-
-// to do: https://stackoverflow.com/questions/33289726/combination-of-async-function-await-settimeout
+// Label system
 app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
     let preview, denied, lowpriority;
     if (payload.label.name === statusLabels[1]){
