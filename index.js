@@ -20,9 +20,8 @@ const mergedPRs = fs.readFileSync('./message/merged.md', 'utf8');
 const draftPRs = fs.readFileSync('./message/draft.md', 'utf8');
 const lowPriorityMessage = fs.readFileSync('./message/label/lowpriority.md', 'utf8');
 const ignoreLabels = ["maintainer"];
-const statusLabels = ["status: low priority", "status: needs preview", "status: denied"];
+const statusLabels = ["status: low priority", "status: needs preview", "status: denied", "status: invalid"];
 const reasonLabels = ["reason: abuse risk", "reason: commercial usage", "reason: impersonation", "reason: inaccessible website", "reason: incomplete pr", "reason: incomplete website", "reason: invalid file", "reason: invalid records", "reason: invalid social", "reason: merge conflict", "reason: not dev related", "reason: nsfw", "reason: other", "reason: unauthorized"];
-const listOfLabels = [];
 
 Sentry.init({
     dsn: sentryDsn,
@@ -93,17 +92,20 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
 
 // Label system
 app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
-    let preview, denied, lowpriority;
+    let preview, denied, invalid, lowpriority;
     if (payload.label.name === statusLabels[1]){
         preview = true;
     } else if (payload.label.name === statusLabels[2]) {
         denied = true;
+    } else if (payload.label.name === statusLabels[3]) {
+        invalid = true;
     } else if (payload.label.name === statusLabels[0]) {
         lowpriority = true;
     }
 
-    if (denied === true) {
+    if (denied === true || invalid === true) {
         try {
+            const listOfLabels = [];
             // timeout so that it creates a little time window for the maintainer to add the rest of the labels
             await new Promise(resolve => setTimeout(resolve, 5000));
             const data = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
@@ -136,16 +138,16 @@ app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
 
             const labelMessages = allMessages.join('\n\n');
             const body = `
-# Pull Request Closed
+# Invalid Pull Request
 
-This pull request was closed for the following reasons which the reviewing maintainer believes apply to your request:
+This pull request is invalid due to the following reason(s):
 
 ---
 ${labelMessages}
 
 ---
 
-If you have any further questions, please create an issue or ask our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
+If you need any help, please create an issue or ask our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
 
 `;
             await octokit.rest.issues.createComment({
@@ -154,13 +156,16 @@ If you have any further questions, please create an issue or ask our team in the
                 issue_number: payload.pull_request.number,
                 body: body
             });
-            await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
-                owner: payload.repository.owner.login,
-                repo: payload.repository.name,
-                pull_number: payload.pull_request.number,
-                state: 'closed',
-            });
-            console.log(`Sent reason messages and closed pull request at #${payload.pull_request.number} from ${payload.repository.name}`);
+            console.log(`Sent reason messages at #${payload.pull_request.number} from ${payload.repository.name}`);
+            if (denied === true) {
+                await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
+                    owner: payload.repository.owner.login,
+                    repo: payload.repository.name,
+                    pull_number: payload.pull_request.number,
+                    state: 'closed',
+                });
+                console.log(`Closed pull request at #${payload.pull_request.number} from ${payload.repository.name}`);
+            };
         } catch (error) {
             Sentry.captureException(error);
             fastify.log.error(error);
