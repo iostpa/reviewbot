@@ -1,7 +1,7 @@
 {
   "name": "reviewbot",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "description": "An app to assist in the review process of is-a-dev",
   "author": "iostpa",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@fastify/middie": "^9.3.2",
-    "@sentry/bun": "^10.50.0",
+    "@sentry/bun": "^10.51.0",
     "dotenv": "^17.4.2",
     "fastify": "^5.8.5",
     "octokit": "^5.0.5"

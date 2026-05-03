@@ -14,7 +14,7 @@ updates:
 
     - package-ecosystem: "github-actions"
       target-branch: "main"
-      directory: "/.github/workflows"
+      directory: "/.forgejo/workflows"
       schedule:
         interval: "daily"
       groups:

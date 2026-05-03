@@ -1,0 +1,2 @@
+### Invalid File
+Your file and its format is invalid and fails checks. Check that your file is in the correct directory, has a valid filename, and is valid JSON. For more information, read [our documentation on file structure](https://docs.is-a.dev/domain-structure).

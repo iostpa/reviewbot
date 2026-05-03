@@ -1,0 +1,2 @@
+### Invalid Social
+One or more of the social handles you've provided in your file(s) are invalid. Common examples include the mistake of using a GitHub noreply email or providing an account that doesn't exist, such as a nonexistent Twitter account.
