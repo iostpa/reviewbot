@@ -20,7 +20,6 @@ const mergedPRs = fs.readFileSync('./message/merged.md', 'utf8');
 const draftPRs = fs.readFileSync('./message/draft.md', 'utf8');
 const lowPriorityMessage = fs.readFileSync('./message/label/lowpriority.md', 'utf8');
 const ignoreLabels = ["maintainer"];
-const statusLabels = ["status: low priority", "status: needs preview", "status: denied", "status: invalid"];
 const reasonLabels = ["reason: abuse risk", "reason: commercial usage", "reason: impersonation", "reason: inaccessible website", "reason: incomplete pr", "reason: incomplete website", "reason: invalid file", "reason: invalid records", "reason: invalid social", "reason: merge conflict", "reason: not dev related", "reason: nsfw", "reason: other", "reason: unauthorized"];
 
 Sentry.init({
@@ -92,14 +91,12 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
 
 // Label system
 app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
-    let preview, denied, invalid, lowpriority;
-    if (payload.label.name === statusLabels[1]){
-        preview = true;
-    } else if (payload.label.name === statusLabels[2]) {
+    let denied, invalid, lowpriority;
+    if (payload.label.name === "status: denied") {
         denied = true;
-    } else if (payload.label.name === statusLabels[3]) {
+    } else if (payload.label.name === "status: invalid") {
         invalid = true;
-    } else if (payload.label.name === statusLabels[0]) {
+    } else if (payload.label.name === "status: low priority") {
         lowpriority = true;
     }
 
@@ -128,13 +125,11 @@ app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
                     let finalReason = initialReason.replace(/\s+/g, '-');
                     let message = fs.readFileSync(`./message/label/${finalReason}.md`, 'utf8');
                     allMessages.push(message);
-                }   
+                } else if (listOfLabels[i] === "status: needs preview") {
+                    let message = fs.readFileSync(`./message/label/needs-preview.md`, 'utf8');
+                    allMessages.push(message);
+                };
             }
-
-            if (preview === true && !listOfLabels.includes("reason: inaccessible website")) {
-                let message = fs.readFileSync(`./message/label/inaccessible-website.md`, 'utf8');
-                allMessages.push(message);
-            };
 
             const labelMessages = allMessages.join('\n\n');
             const body = `
