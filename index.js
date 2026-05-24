@@ -94,31 +94,33 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
         conn = await pool.getConnection();
         let res = await conn.query(`SELECT * FROM LIST WHERE username=(?)`, [payload.pull_request.user.login]);
         let resJson = JSON.stringify(res);
-        let parsed = JSON.parse(resJson);
-        if (parsed[0].username === payload.pull_request.user.login) {
-            let lowPriority = `
+        if (resJson !== "[]") {
+            let parsed = JSON.parse(resJson);
+            if (parsed[0].username === payload.pull_request.user.login) {
+                let lowPriority = `
 # Low priority
 
-You're attempting to create a new pull request to bypass the low priority label placed on your previous PR, ${parsed[0].prnumber}. Unfortunately, we've noticed this attempt, and we're applying the label you were trying to escape on this pull request, too.
+You're attempting to create a new pull request to bypass the low priority label placed on your previous pull request, #${parsed[0].prnumber}. Unfortunately, we've noticed this attempt, and we're applying the label you were trying to escape on this pull request, too.
 
 If you think this is a mistake then please contact [iostpa](https://github.com/iostpa).   
-            `;
-            await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/labels', {
-                owner: payload.repository.owner.login,
-                repo: payload.repository.name,
-                issue_number: payload.pull_request.number,
-                labels: [
-                    'status: low priority'
-                ]
-            });
-            await octokit.rest.issues.createComment({
-                owner: payload.repository.owner.login,
-                repo: payload.repository.name,
-                issue_number: payload.pull_request.number,
-                body: lowPriority
-            });
-            console.log(`Auto-added and sent low priority message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name} because it was found in the database.`);
-        } else if (!res) {
+        `;
+                await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/labels', {
+                    owner: payload.repository.owner.login,
+                    repo: payload.repository.name,
+                    issue_number: payload.pull_request.number,
+                    labels: [
+                        'status: low priority'
+                    ]
+                });
+                await octokit.rest.issues.createComment({
+                    owner: payload.repository.owner.login,
+                    repo: payload.repository.name,
+                    issue_number: payload.pull_request.number,
+                    body: lowPriority
+                });
+                console.log(`Auto-added and sent low priority message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name} because it was found in the database.`);
+            }
+        } else if (resJson === '[]') {
             return;
         }
     } catch (error) {
@@ -272,9 +274,37 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
                 repo: payload.repository.name,
                 issue_number: payload.pull_request.number,
                 body: mergedPRs
-            }); 
-            ;
+            });
             console.log(`Sent a merged message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
+            
+            // remove almost all labels if there are any
+            const listOfLabels = [];
+            const data = await octokit.request('GET /repos/{owner}/{repo}/pulls/{pull_number}', {
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                pull_number: payload.pull_request.number
+            });
+
+            const labelData = data.data.labels;
+            for (let i in labelData) {
+                if (labelData[i].name) {
+                    listOfLabels.push(labelData[i].name);
+                }
+            }
+
+            for (let i in listOfLabels) {
+                if (!listOfLabels.includes("maintainer")) {
+                    await octokit.request('DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}', {
+                        owner: payload.repository.owner.login,
+                        repo: payload.repository.name,
+                        issue_number: payload.pull_request.number,
+                        name: listOfLabels[i],
+                    });
+                } else if (listOfLabels.includes("maintainer")) {
+                    return;
+                }
+            }
+            console.log(`Removed all labels from #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
         } else { return; };
     } catch (error) {
         Sentry.captureException(error);
