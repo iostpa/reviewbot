@@ -5,6 +5,7 @@ import middie from '@fastify/middie';
 import Fastify from 'fastify';
 import { App } from 'octokit';
 import { createNodeMiddleware } from '@octokit/webhooks';
+const mariadb = require('mariadb');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -31,6 +32,17 @@ Sentry.init({
     integrations: [Sentry.bunRuntimeMetricsIntegration()],
 });
 
+// Database
+const pool = mariadb.createPool({
+    user: process.env.SQL_USER,
+    password: process.env.SQL_PASSWORD,
+    host: process.env.SQL_HOST,
+    port: process.env.SQL_PORT,
+    database: process.env.SQL_DB_NAME,
+    ssl: false,
+    connectionLimit: 5
+});
+
 // Create an authenticated Octokit client authenticated as a GitHub App
 const app = new App({
     appId,
@@ -49,6 +61,7 @@ app.octokit.log.debug(`Authenticated as '${data.name}'`);
 // https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request
 app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
     console.log(`Received a open pull request event for #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
+    let conn;
     try {
         const labels = await octokit.rest.issues.listLabelsOnIssue({
             owner: payload.repository.owner.login,
@@ -77,7 +90,37 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
             });
             console.log(`Sent a opened message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
         };
-        ;
+        // low priority check
+        conn = await pool.getConnection();
+        let res = await conn.query(`SELECT * FROM LIST WHERE username=(?)`, [payload.pull_request.user.login]);
+        let resJson = JSON.stringify(res);
+        let parsed = JSON.parse(resJson);
+        if (parsed[0].username === payload.pull_request.user.login) {
+            let lowPriority = `
+# Low priority
+
+You're attempting to create a new pull request to bypass the low priority label placed on your previous PR, ${parsed[0].prnumber}. Unfortunately, we've noticed this attempt, and we're applying the label you were trying to escape on this pull request, too.
+
+If you think this is a mistake then please contact [iostpa](https://github.com/iostpa).   
+            `;
+            await octokit.request('POST /repos/{owner}/{repo}/issues/{issue_number}/labels', {
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                issue_number: payload.pull_request.number,
+                labels: [
+                    'status: low priority'
+                ]
+            });
+            await octokit.rest.issues.createComment({
+                owner: payload.repository.owner.login,
+                repo: payload.repository.name,
+                issue_number: payload.pull_request.number,
+                body: lowPriority
+            });
+            console.log(`Auto-added and sent low priority message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name} because it was found in the database.`);
+        } else if (!res) {
+            return;
+        }
     } catch (error) {
         Sentry.captureException(error);
         fastify.log.error(error);
@@ -86,6 +129,8 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
         } else {
             console.error(error);
         }
+    } finally {
+        if (conn) conn.end();
     }
 });
 
@@ -134,16 +179,9 @@ app.webhooks.on('pull_request.labeled', async ({ octokit, payload }) => {
             const labelMessages = allMessages.join('\n\n');
             let body;
             if (!labelMessages.length) {
-            body = `
-# Invalid Pull Request
-
-This pull request is invalid. Unfortunately the reviewer didn't specify what is wrong with the pull request.
-
-If you need any help, please create an issue or ask our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
-
-`;
+                body = fs.readFileSync('./message/invalidnolabel.md', 'utf8');
             } else {
-            body = `
+                body = `
 # Invalid Pull Request
 
 This pull request is invalid due to the following reason(s):
@@ -183,14 +221,24 @@ If you need any help, please create an issue or ask our team in the [Discord ser
             }
         };
     } else if (lowpriority === true) {
+        let conn;
         try {
-            await octokit.rest.issues.createComment({
-                owner: payload.repository.owner.login,
-                repo: payload.repository.name,
-                issue_number: payload.pull_request.number,
-                body: lowPriorityMessage
-            });
-            console.log(`Sent low priority message to ${payload.pull_request.number} from ${payload.repository.name}`);
+            conn = await pool.getConnection();
+            let res = await conn.query(`SELECT * FROM LIST WHERE username=(?)`, [payload.pull_request.user.login]);
+            let resJson = JSON.stringify(res);
+            if (resJson === "[]") {
+                await octokit.rest.issues.createComment({
+                    owner: payload.repository.owner.login,
+                    repo: payload.repository.name,
+                    issue_number: payload.pull_request.number,
+                    body: lowPriorityMessage
+                });
+                console.log(`Sent low priority message to #${payload.pull_request.number} from ${payload.repository.name}`);
+                res = await conn.query("INSERT INTO LIST VALUES (?, ?)", [payload.pull_request.user.login, payload.pull_request.number]);
+                console.log(`Logged #${payload.pull_request.number} from ${payload.repository.name} to the low priority database.`);
+            } else {
+                return;
+            }
         } catch (error) {
             Sentry.captureException(error);
             fastify.log.error(error);
@@ -199,6 +247,8 @@ If you need any help, please create an issue or ask our team in the [Discord ser
             } else {
                 console.error(error);
             }
+        } finally {
+            if (conn) conn.end();
         };
     }
 });
@@ -234,6 +284,33 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
         } else {
             console.error(error);
         }
+    }
+});
+
+app.webhooks.on('pull_request.unlabeled', async ({ payload }) => {
+    let conn;
+    try {
+        if (payload.label.name === "status: low priority") {
+            conn = await pool.getConnection();
+            let res = await conn.query(`SELECT * FROM LIST WHERE username=(?)`, [payload.pull_request.user.login]);
+            let resJson = JSON.stringify(res);
+            if (resJson !== "[]") {
+                res = await conn.query("DELETE FROM LIST WHERE username=(?)", [payload.pull_request.user.login]);
+                console.log(`Removed #${payload.pull_request.number} from ${payload.repository.name} from the low priority database.`);
+            } else {
+                return;
+            }
+        }
+    } catch (error) {
+        Sentry.captureException(error);
+        fastify.log.error(error);
+        if (error.response) {
+            console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+        } else {
+            console.error(error);
+        }
+    } finally {
+        if (conn) conn.end();
     }
 });
 
