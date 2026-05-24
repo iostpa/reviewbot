@@ -22,6 +22,7 @@ const draftPRs = fs.readFileSync('./message/draft.md', 'utf8');
 const lowPriorityMessage = fs.readFileSync('./message/label/lowpriority.md', 'utf8');
 const ignoreLabels = ["maintainer"];
 const reasonLabels = ["reason: abuse risk", "reason: commercial usage", "reason: impersonation", "reason: inaccessible website", "reason: incomplete pr", "reason: incomplete website", "reason: invalid file", "reason: invalid records", "reason: invalid social", "reason: merge conflict", "reason: not dev related", "reason: nsfw", "reason: other", "reason: unauthorized", "reason: incompatible records"];
+const unremovableLabels = ["maintainer", "ci: bypass-owner-check", "no-stale", "r: william"];
 
 Sentry.init({
     dsn: sentryDsn,
@@ -300,7 +301,7 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
                         issue_number: payload.pull_request.number,
                         name: listOfLabels[i],
                     });
-                } else if (listOfLabels.includes("maintainer")) {
+                } else if (unremovableLabels.includes(listOfLabels[i])) {
                     return;
                 }
             }
