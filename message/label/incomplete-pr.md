@@ -1,2 +1,2 @@
 ### Incomplete PR
-Your pull request is incomplete. This means that you have not filled out the PR template, which includes completing the requirements form, agreeing to our [Terms of Service](https://is-a.dev/terms), and providing a preview of your website if applicable, all of which are **mandatory**.
+Your pull request is incomplete. This means that you have not filled out the PR template, which includes completing the requirements form, agreeing to our [Terms of Service](https://is-a.dev/terms), and providing a preview of your website if applicable, all of which are **mandatory**. You can find the PR template [here](https://github.com/is-a-dev/register/blob/main/.github/PULL_REQUEST_TEMPLATE.md).
