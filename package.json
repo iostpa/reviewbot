@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@fastify/middie": "^9.3.2",
-    "@sentry/bun": "^10.53.1",
+    "@sentry/bun": "^10.54.0",
     "dotenv": "^17.4.2",
     "fastify": "^5.8.5",
     "mariadb": "^3.5.2",
