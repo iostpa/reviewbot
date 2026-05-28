@@ -5,6 +5,7 @@ import middie from '@fastify/middie';
 import Fastify from 'fastify';
 import { App } from 'octokit';
 import { createNodeMiddleware } from '@octokit/webhooks';
+import { CronJob } from 'cron';
 const mariadb = require('mariadb');
 
 // Load environment variables from .env file
@@ -23,6 +24,7 @@ const lowPriorityMessage = fs.readFileSync('./message/label/lowpriority.md', 'ut
 const ignoreLabels = ["maintainer"];
 const reasonLabels = ["reason: abuse risk", "reason: commercial usage", "reason: impersonation", "reason: inaccessible website", "reason: incomplete pr", "reason: incomplete website", "reason: invalid file", "reason: invalid records", "reason: invalid social", "reason: merge conflict", "reason: not dev related", "reason: nsfw", "reason: other", "reason: unauthorized", "reason: incompatible records"];
 const unremovableLabels = ["maintainer", "ci: bypass-owner-check", "no-stale", "r: william"];
+const reviewerUsernames = ["DEV-DIBSTER", "dragsbruh", "iostpa", "notamitgamer", "omsenjalia", "orangci", "satr14washere", "Stef-00012", "STICKnoLOGIC", "wdhdev", "Yunexiz"];
 
 Sentry.init({
     dsn: sentryDsn,
@@ -58,6 +60,60 @@ const { data } = await app.octokit.request('/app');
 
 // https://github.com/octokit/core.js#logging
 app.octokit.log.debug(`Authenticated as '${data.name}'`);
+
+
+function getNumberOfDays(start, end) {
+    const date1 = new Date(start);
+    const date2 = new Date(end);
+
+    // One day in milliseconds
+    const oneDay = 1000 * 60 * 60 * 24;
+
+    // Calculating the time difference between two dates
+    const diffInTime = date2.getTime() - date1.getTime();
+
+    // Calculating the no. of days between two dates
+    const diffInDays = Math.round(diffInTime / oneDay);
+
+    return diffInDays;
+};
+
+
+// Check if a low priority pull request has been in the database for over 3 days
+let job = new CronJob(
+    '0 * * * *', // cronTime
+    async function () {
+        let date = new Date();
+        let conn;
+        try {
+            conn = await pool.getConnection();
+            let res = await conn.query(`SELECT * FROM LIST WHERE time=(?)`);
+            let resJson = JSON.stringify(res);
+            if (resJson !== '[]') {
+                let parsed = JSON.parse(resJson);
+                for (let i in parsed) {
+                    if (getNumberOfDays(parsed[i].time, date) === 3 || getNumberOfDays(parsed[i].time, date) >= 3) {
+                        await conn.query(`DELETE FROM LIST WHERE time=(?)`, [parsed[i].time]);
+                        console.log(`Removed #${parsed[i].prnumber} from the database since it has existed for 3 or more days.`);
+                    }
+                }
+            }
+        } catch (error) {
+            Sentry.captureException(error);
+            fastify.log.error(error);
+            if (error.response) {
+                console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+            } else {
+                console.error(error);
+            }
+        } finally {
+            if (conn) conn.end();
+        }
+    }, // onTick
+    null, // onComplete
+    true, // start
+    'Europe/Bucharest' // timeZone
+);
 
 // https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request
 app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
@@ -97,7 +153,8 @@ app.webhooks.on('pull_request.opened', async ({ octokit, payload }) => {
         let resJson = JSON.stringify(res);
         if (resJson !== "[]") {
             let parsed = JSON.parse(resJson);
-            if (parsed[0].username === payload.pull_request.user.login) {
+            let date = new Date();
+            if (parsed[0].username === payload.pull_request.user.login && getNumberOfDays(parsed[i].time, date) <= 3) {
                 let lowPriority = `
 # Low priority
 
@@ -119,7 +176,18 @@ If you think this is a mistake then please contact [iostpa](https://github.com/i
                     issue_number: payload.pull_request.number,
                     body: lowPriority
                 });
-                console.log(`Auto-added and sent low priority message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name} because it was found in the database.`);
+                await conn.query(`UPDATE LIST SET prnumber=(?) WHERE prnumber=(?)`, [payload.pull_request.number, parsed[0].prnumber]);
+                await conn.query(`UPDATE LIST SET time=(?) WHERE prnumber=(?)`, [parsed[0].prnumber, payload.created_at]);
+                console.log(`Auto-added, replaceced with new PR number and sent low priority message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name} because it was found in the database.`);
+            } else if (parsed[0].username === payload.pull_request.user.login && getNumberOfDays(parsed[i].time, date) === 3 || getNumberOfDays(parsed[i].time, date) >= 3) {
+                res = await conn.query("DELETE FROM LIST WHERE username=(?)", [parsed[0].username]);
+                await octokit.request('DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}', {
+                    owner: payload.repository.owner.login,
+                    repo: payload.repository.name,
+                    issue_number: payload.pull_request.number,
+                    name: "status: low priority",
+                });
+                console.log(`Removed #${payload.pull_request.number} from ${payload.repository.full_name} from the low priority database as well as the label.`);
             }
         } else if (resJson === '[]') {
             return;
@@ -204,7 +272,7 @@ If you need any help, please create an issue or ask our team in the [Discord ser
                 issue_number: payload.pull_request.number,
                 body: body
             });
-            console.log(`Sent reason messages at #${payload.pull_request.number} from ${payload.repository.name}`);
+            console.log(`Sent reason messages at #${payload.pull_request.number} from ${payload.repository.full_name}`);
             if (denied === true) {
                 await octokit.request('PATCH /repos/{owner}/{repo}/pulls/{pull_number}', {
                     owner: payload.repository.owner.login,
@@ -212,7 +280,7 @@ If you need any help, please create an issue or ask our team in the [Discord ser
                     pull_number: payload.pull_request.number,
                     state: 'closed',
                 });
-                console.log(`Closed pull request at #${payload.pull_request.number} from ${payload.repository.name}`);
+                console.log(`Closed pull request at #${payload.pull_request.number} from ${payload.repository.full_name}`);
             };
         } catch (error) {
             Sentry.captureException(error);
@@ -236,11 +304,9 @@ If you need any help, please create an issue or ask our team in the [Discord ser
                     issue_number: payload.pull_request.number,
                     body: lowPriorityMessage
                 });
-                console.log(`Sent low priority message to #${payload.pull_request.number} from ${payload.repository.name}`);
-                res = await conn.query("INSERT INTO LIST VALUES (?, ?)", [payload.pull_request.user.login, payload.pull_request.number]);
-                console.log(`Logged #${payload.pull_request.number} from ${payload.repository.name} to the low priority database.`);
-            } else {
-                return;
+                console.log(`Sent low priority message to #${payload.pull_request.number} from ${payload.repository.full_name}`);
+                await conn.query("INSERT INTO LIST VALUES (?, ?, ?)", [payload.pull_request.user.login, payload.pull_request.number, payload.pull_request.created_at]);
+                console.log(`Logged #${payload.pull_request.number} from ${payload.repository.full_name} to the low priority database.`);
             }
         } catch (error) {
             Sentry.captureException(error);
@@ -259,6 +325,7 @@ If you need any help, please create an issue or ask our team in the [Discord ser
 // https://github.com/octokit/webhooks.js/?tab=readme-ov-file#webhook-events
 app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
     console.log(`Received a closed pull request event for #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
+    let conn;
     try {
         if (payload.pull_request.merged === true) {
             const labels = await octokit.rest.issues.listLabelsOnIssue({
@@ -291,22 +358,41 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
                 if (labelData[i].name) {
                     listOfLabels.push(labelData[i].name);
                 }
-            }
+            }       
 
             for (let i in listOfLabels) {
-                if (!listOfLabels.includes("maintainer")) {
+                if (!listOfLabels.includes(unremovableLabels)) {
                     await octokit.request('DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}', {
                         owner: payload.repository.owner.login,
                         repo: payload.repository.name,
                         issue_number: payload.pull_request.number,
                         name: listOfLabels[i],
                     });
+                } else if (listOfLabels[i] == "status: low priority") {
+                    return;
                 } else if (unremovableLabels.includes(listOfLabels[i])) {
                     return;
                 }
             }
             console.log(`Removed all labels from #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
-        } else { return; };
+        } else {
+            conn = await pool.getConnection();
+            let res = await conn.query(`SELECT * FROM LIST WHERE username=(?)`, [payload.pull_request.user.login]);
+            let resJson = JSON.stringify(res);
+            if (resJson !== "[]") {
+                let parsed = JSON.parse(resJson);
+                if (reviewerUsernames.includes(payload.sender.login)) {
+                    res = await conn.query("DELETE FROM LIST WHERE username=(?)", [parsed[0].username]);
+                    await octokit.request('DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}', {
+                        owner: payload.repository.owner.login,
+                        repo: payload.repository.name,
+                        issue_number: payload.pull_request.number,
+                        name: "status: low priority",
+                    });
+                    console.log(`Removed #${payload.pull_request.number} from ${payload.repository.full_name} from the low priority database as well as the label.`);
+                }
+            }
+        };
     } catch (error) {
         Sentry.captureException(error);
         fastify.log.error(error);
@@ -315,6 +401,8 @@ app.webhooks.on('pull_request.closed', async ({ octokit, payload }) => {
         } else {
             console.error(error);
         }
+    } finally {
+        if (conn) conn.end();
     }
 });
 
@@ -327,7 +415,7 @@ app.webhooks.on('pull_request.unlabeled', async ({ payload }) => {
             let resJson = JSON.stringify(res);
             if (resJson !== "[]") {
                 res = await conn.query("DELETE FROM LIST WHERE username=(?)", [payload.pull_request.user.login]);
-                console.log(`Removed #${payload.pull_request.number} from ${payload.repository.name} from the low priority database.`);
+                console.log(`Removed #${payload.pull_request.number} from ${payload.repository.full_name} from the low priority database.`);
             } else {
                 return;
             }
