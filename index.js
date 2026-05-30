@@ -40,6 +40,7 @@ Sentry.init({
 });
 
 // Database
+// Following order of columns: username, prnumber, time, repoowner, repo
 const pool = mariadb.createPool({
     user: process.env.SQL_USER,
     password: process.env.SQL_PASSWORD,
@@ -106,7 +107,7 @@ let job = new CronJob(
             if (resJson !== '[]') {
                 let parsed = JSON.parse(resJson);
                 for (let i in parsed) {
-                    if (getNumberOfDays(parsed[i].time, date) === numberOfDays || getNumberOfDays(parsed[i].time, date) >= numberOfDays) {
+                    if (getNumberOfDays(parsed[i].time, date) >= numberOfDays) {
                         await conn.query(`DELETE FROM LIST WHERE time=(?)`, [parsed[i].time]);
                         await installationOctokit.request('DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}', {
                             owner: parsed[i].repoowner,
@@ -200,15 +201,15 @@ If you think this is a mistake then please contact [iostpa](https://github.com/i
                 });
                 await conn.query(`UPDATE LIST SET prnumber=(?) WHERE prnumber=(?)`, [payload.pull_request.number, parsed[0].prnumber]);
                 await conn.query(`UPDATE LIST SET time=(?) WHERE prnumber=(?)`, [payload.pull_request.created_at, parsed[0].prnumber]);
-                console.log(`Auto-added, replaceced with new PR number and sent low priority message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name} because it was found in the database.`);
-            } else if (parsed[0].username === payload.pull_request.user.login && getNumberOfDays(parsed[0].time, date) === numberOfDays || getNumberOfDays(parsed[0].time, date) >= numberOfDays) {
-                res = await conn.query("DELETE FROM LIST WHERE username=(?)", [parsed[0].username]);
+                console.log(`Auto-added, replaced with new PR number and sent low priority message to #${payload.pull_request.number} on https://github.com/${payload.repository.full_name} because it was found in the database.`);
+            } else if (parsed[0].username === payload.pull_request.user.login && getNumberOfDays(parsed[0].time, date) >= numberOfDays) {
                 await octokit.request('DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}', {
                     owner: payload.repository.owner.login,
                     repo: payload.repository.name,
                     issue_number: payload.pull_request.number,
                     name: "status: low priority",
                 });
+                res = await conn.query("DELETE FROM LIST WHERE username=(?)", [parsed[0].username]);
                 console.log(`Removed #${payload.pull_request.number} from https://github.com/${payload.repository.full_name} from the low priority database as well as the label.`);
             }
         } else if (resJson === '[]') {
