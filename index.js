@@ -328,7 +328,7 @@ If you need any help, please create an issue or ask our team in the [Discord ser
                     body: lowPriorityMessage
                 });
                 console.log(`Sent low priority message to #${payload.pull_request.number} from https://github.com/${payload.repository.full_name}`);
-                await conn.query("INSERT INTO LIST VALUES (?, ?, ?, ?, ?)", [payload.pull_request.user.login, payload.pull_request.number, payload.pull_request.created_at, payload.repository.owner.login, payload.repository.name]);
+                await conn.query("INSERT INTO LIST VALUES (?, ?, ?, ?, ?)", [payload.pull_request.user.login, payload.pull_request.number, payload.pull_request.updated_at, payload.repository.owner.login, payload.repository.name]);
                 console.log(`Logged #${payload.pull_request.number} from https://github.com/${payload.repository.full_name} to the low priority database.`);
             }
         } catch (error) {
