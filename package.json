@@ -6,8 +6,8 @@
   "description": "An app to assist in the review process of is-a-dev",
   "author": "iostpa",
   "scripts": {
-    "server": "bun index.js",
-    "lint": "eslint index.js"
+    "server": "bun src/index.js",
+    "lint": "eslint src"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
