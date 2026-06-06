@@ -5,8 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "message/*"
-      - "index.js"
+      - "src/*"
       - "bun.lock"
       - "package.json"
       - "Dockerfile"
