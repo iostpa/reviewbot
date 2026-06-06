@@ -21,10 +21,12 @@ dotenv.config();
 const sentryDsn = process.env.SENTRY;
 const appId = process.env.APP_ID;
 const installationId = process.env.INSTALLATION_ID;
-const privateKey = fs.readFileSync(path.resolve(process.env.PRIVATE_KEY_PATH), 'utf8');
+const privateKey = fs.readFileSync(
+    path.resolve(process.env.PRIVATE_KEY_PATH),
+    'utf8'
+);
 const secret = process.env.WEBHOOK_SECRET;
 export const numberOfDays = 3;
-
 
 Sentry.init({
     dsn: sentryDsn,
@@ -44,7 +46,7 @@ export const pool = mariadb.createPool({
     port: process.env.SQL_PORT,
     database: process.env.SQL_DB_NAME,
     ssl: false,
-    connectionLimit: 5
+    connectionLimit: 5,
 });
 
 // Create an authenticated Octokit client authenticated as a GitHub App
@@ -52,8 +54,8 @@ const app = new App({
     appId,
     privateKey,
     webhooks: {
-        secret
-    }
+        secret,
+    },
 });
 
 const appOctokit = await app.getInstallationOctokit(installationId);
@@ -77,7 +79,6 @@ const { data } = await app.octokit.request('/app');
 // https://github.com/octokit/core.js#logging
 app.octokit.log.debug(`Authenticated as '${data.name}'`);
 
-
 // Check if a low priority pull request has been in the database for over 3 days
 let job = new CronJob(
     '0 * * * *', // cronTime
@@ -92,14 +93,21 @@ let job = new CronJob(
                 let parsed = JSON.parse(resJson);
                 for (let i in parsed) {
                     if (getNumberOfDays(parsed[i].time, date) >= numberOfDays) {
-                        await conn.query(`DELETE FROM LIST WHERE time=(?)`, [parsed[i].time]);
-                        await appOctokit.request('DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}', {
-                            owner: parsed[i].repoowner,
-                            repo: parsed[i].repo,
-                            issue_number: parsed[i].prnumber,
-                            name: "status: low priority",
-                        });
-                        console.log(`Removed #${parsed[i].prnumber} from the database since it has existed for 3 or more days.`);
+                        await conn.query(`DELETE FROM LIST WHERE time=(?)`, [
+                            parsed[i].time,
+                        ]);
+                        await appOctokit.request(
+                            'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
+                            {
+                                owner: parsed[i].repoowner,
+                                repo: parsed[i].repo,
+                                issue_number: parsed[i].prnumber,
+                                name: 'status: low priority',
+                            }
+                        );
+                        console.log(
+                            `Removed #${parsed[i].prnumber} from the database since it has existed for 3 or more days.`
+                        );
                     }
                 }
             } else if (resJson === '[]') {
@@ -109,7 +117,9 @@ let job = new CronJob(
             Sentry.captureException(error);
             fastify.log.error(error);
             if (error.response) {
-                console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+                console.error(
+                    `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
+                );
             } else {
                 console.error(error);
             }
@@ -124,12 +134,22 @@ let job = new CronJob(
 
 app.webhooks.on('pull_request.opened', async ({ payload }) => {
     try {
-        await opened(appOctokit, payload.repository.owner.login, payload.repository.name, payload.repository.full_name, payload.pull_request.number, payload.pull_request.user.login, payload.pull_request.draft);
+        await opened(
+            appOctokit,
+            payload.repository.owner.login,
+            payload.repository.name,
+            payload.repository.full_name,
+            payload.pull_request.number,
+            payload.pull_request.user.login,
+            payload.pull_request.draft
+        );
     } catch (error) {
         Sentry.captureException(error);
         fastify.log.error(error);
         if (error.response) {
-            console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+            console.error(
+                `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
+            );
         } else {
             console.error(error);
         }
@@ -138,14 +158,27 @@ app.webhooks.on('pull_request.opened', async ({ payload }) => {
 
 // https://github.com/octokit/webhooks.js/?tab=readme-ov-file#webhook-events
 app.webhooks.on('pull_request.closed', async ({ payload }) => {
-    console.log(`Received a closed pull request event for #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`);
+    console.log(
+        `Received a closed pull request event for #${payload.pull_request.number} on https://github.com/${payload.repository.full_name}`
+    );
     try {
-        await closed(appOctokit, payload.pull_request.merged, payload.repository.owner.login, payload.repository.name, payload.repository.full_name, payload.pull_request.number, payload.pull_request.user.login, payload.sender.login);
+        await closed(
+            appOctokit,
+            payload.pull_request.merged,
+            payload.repository.owner.login,
+            payload.repository.name,
+            payload.repository.full_name,
+            payload.pull_request.number,
+            payload.pull_request.user.login,
+            payload.sender.login
+        );
     } catch (error) {
         Sentry.captureException(error);
         fastify.log.error(error);
         if (error.response) {
-            console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+            console.error(
+                `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
+            );
         } else {
             console.error(error);
         }
@@ -155,12 +188,23 @@ app.webhooks.on('pull_request.closed', async ({ payload }) => {
 // Label system
 app.webhooks.on('pull_request.labeled', async ({ payload }) => {
     try {
-        await labeled(appOctokit, payload.label.name, payload.repository.owner.login, payload.repository.name, payload.repository.full_name, payload.pull_request.number, payload.pull_request.updated_at, payload.pull_request.user.login);
+        await labeled(
+            appOctokit,
+            payload.label.name,
+            payload.repository.owner.login,
+            payload.repository.name,
+            payload.repository.full_name,
+            payload.pull_request.number,
+            payload.pull_request.updated_at,
+            payload.pull_request.user.login
+        );
     } catch (error) {
         Sentry.captureException(error);
         fastify.log.error(error);
         if (error.response) {
-            console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+            console.error(
+                `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
+            );
         } else {
             console.error(error);
         }
@@ -169,25 +213,31 @@ app.webhooks.on('pull_request.labeled', async ({ payload }) => {
 
 app.webhooks.on('pull_request.unlabeled', async ({ payload }) => {
     try {
-        await unlabeled(payload.label.name, payload.pull_request.user.login, payload.pull_request.number, payload.repository.full_name);
+        await unlabeled(
+            payload.label.name,
+            payload.pull_request.user.login,
+            payload.pull_request.number,
+            payload.repository.full_name
+        );
     } catch (error) {
         Sentry.captureException(error);
         fastify.log.error(error);
         if (error.response) {
-            console.error(`Error! Status: ${error.response.status}. Message: ${error.response.data.message}`);
+            console.error(
+                `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
+            );
         } else {
             console.error(error);
         }
     }
 });
 
-
 // Handle errors
 app.webhooks.onError((error) => {
     Sentry.captureException(error);
     fastify.log.error(error);
     if (error.name === 'AggregateError') {
-    // Log Secret verification errors
+        // Log Secret verification errors
         console.log(`Error processing request: ${error.event}`);
     } else {
         console.log(error);
@@ -204,7 +254,7 @@ const localWebhookUrl = `http://${host}:${port}${webhookPath}`;
 const middleware = createNodeMiddleware(app.webhooks, { path: webhookPath });
 
 const fastify = Fastify({
-    logger: false
+    logger: false,
 });
 await fastify.register(middie);
 fastify.use(middleware);
