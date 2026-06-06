@@ -12,4 +12,4 @@ export function getNumberOfDays(start, end) {
     const diffInDays = Math.round(diffInTime / oneDay);
 
     return diffInDays;
-};
+}

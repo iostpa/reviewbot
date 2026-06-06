@@ -1,0 +1,16 @@
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+README.me
+LICENSE
+.env.example
+.github
+CONTRIBUTING.md
+package.json
+bun.lock
+src/message
+README.md
+eslint.config.js
+prettier.config.js
