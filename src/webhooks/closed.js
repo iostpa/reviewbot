@@ -127,6 +127,6 @@ export async function closed(
             }
         }
     } finally {
-        if (conn) conn.end;
+        if (conn) conn.end();
     }
 }
