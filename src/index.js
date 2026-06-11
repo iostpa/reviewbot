@@ -26,7 +26,7 @@ const privateKey = fs.readFileSync(
     'utf8'
 );
 const secret = process.env.WEBHOOK_SECRET;
-export const numberOfDays = 0; // 3
+export const numberOfDays = 3;
 
 Sentry.init({
     dsn: sentryDsn,
@@ -80,7 +80,7 @@ app.octokit.log.debug(`Authenticated as '${data.name}'`);
 
 // Check if a low priority pull request has been in the database for over 3 days
 let job = new CronJob(
-    '* * * * *', // cronTime 0 * * * *
+    '0 * * * *', // cronTime 0 * * * *
     async function () {
         let date = new Date();
         let conn;
