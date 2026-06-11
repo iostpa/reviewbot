@@ -1,10 +1,10 @@
-import { pool } from '../index';
+import { pool } from '../index.js';
 import fs from 'fs';
 import path from 'path';
 
 const ignoreLabels = ['maintainer'];
 const mergedPRs = fs.readFileSync(
-    path.join(__dirname, '../message/merged.md'),
+    path.join(import.meta.dirname, '../message/merged.md'),
     'utf8'
 );
 const unremovableLabels = [

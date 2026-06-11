@@ -1,15 +1,15 @@
-import { pool, numberOfDays } from '../index';
-import { getNumberOfDays } from '../tools/numberofdays';
+import { pool, numberOfDays } from '../index.js';
+import { getNumberOfDays } from '../tools/numberofdays.js';
 import fs from 'fs';
 import path from 'path';
 
 const ignoreLabels = ['maintainer'];
 const newPRs = fs.readFileSync(
-    path.join(__dirname, '../message/opened.md'),
+    path.join(import.meta.dirname, '../message/opened.md'),
     'utf8'
 );
 const draftPRs = fs.readFileSync(
-    path.join(__dirname, '../message/draft.md'),
+    path.join(import.meta.dirname, '../message/draft.md'),
     'utf8'
 );
 

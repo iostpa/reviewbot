@@ -1,4 +1,4 @@
-import { pool } from '../index';
+import { pool } from '../index.js';
 
 export async function unlabeled(labelName, username, prNumber, repoFullName) {
     let conn;

@@ -1,4 +1,4 @@
-import { pool } from '../index';
+import { pool } from '../index.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -20,7 +20,7 @@ const reasonLabels = [
     'reason: incompatible records',
 ];
 const lowPriorityMessage = fs.readFileSync(
-    path.join(__dirname, '../message/label/lowpriority.md'),
+    path.join(import.meta.dirname, '../message/label/lowpriority.md'),
     'utf8'
 );
 
@@ -71,13 +71,13 @@ export async function labeled(
                     .replace(/reason:\s/i, '');
                 let finalReason = initialReason.replace(/\s+/g, '-');
                 let message = fs.readFileSync(
-                    path.join(__dirname, `../message/label/${finalReason}.md`),
+                    path.join(import.meta.dirname, `../message/label/${finalReason}.md`),
                     'utf8'
                 );
                 allMessages.push(message);
             } else if (listOfLabels[i] === 'status: needs preview') {
                 let message = fs.readFileSync(
-                    path.join(__dirname, `../message/label/needs-preview.md`),
+                    path.join(import.meta.dirname, `../message/label/needs-preview.md`),
                     'utf8'
                 );
                 allMessages.push(message);
@@ -88,7 +88,7 @@ export async function labeled(
         let body;
         if (!labelMessages.length) {
             body = fs.readFileSync(
-                path.join(__dirname, `../message/invalidnolabel.md`),
+                path.join(import.meta.dirname, `../message/invalidnolabel.md`),
                 'utf8'
             );
         } else {
