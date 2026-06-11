@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/bun';
+import * as Sentry from '@sentry/node';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
@@ -7,12 +7,12 @@ import Fastify from 'fastify';
 import { App } from 'octokit';
 import { createNodeMiddleware } from '@octokit/webhooks';
 import { CronJob } from 'cron';
-import { getNumberOfDays } from './tools/numberofdays';
-import { unlabeled } from './webhooks/unlabeled';
-import { opened } from './webhooks/opened';
-import { closed } from './webhooks/closed';
-import { labeled } from './webhooks/labeled';
-const mariadb = require('mariadb');
+import { getNumberOfDays } from './tools/numberofdays.js';
+import { unlabeled } from './webhooks/unlabeled.js';
+import { opened } from './webhooks/opened.js';
+import { closed } from './webhooks/closed.js';
+import { labeled } from './webhooks/labeled.js';
+import { createPool } from 'mariadb';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -26,7 +26,7 @@ const privateKey = fs.readFileSync(
     'utf8'
 );
 const secret = process.env.WEBHOOK_SECRET;
-export const numberOfDays = 3;
+export const numberOfDays = 0; // 3
 
 Sentry.init({
     dsn: sentryDsn,
@@ -34,12 +34,11 @@ Sentry.init({
     tracesSampleRate: 1.0, // Capture 100% of the transactions
     // Enable logs to be sent to Sentry
     enableLogs: true,
-    integrations: [Sentry.bunRuntimeMetricsIntegration()],
 });
 
 // Database
 // Following order of columns: username, prnumber, time, repoowner, repo
-export const pool = mariadb.createPool({
+export const pool = createPool({
     user: process.env.SQL_USER,
     password: process.env.SQL_PASSWORD,
     host: process.env.SQL_HOST,
@@ -81,7 +80,7 @@ app.octokit.log.debug(`Authenticated as '${data.name}'`);
 
 // Check if a low priority pull request has been in the database for over 3 days
 let job = new CronJob(
-    '0 * * * *', // cronTime
+    '* * * * *', // cronTime 0 * * * *
     async function () {
         let date = new Date();
         let conn;

@@ -1,6 +1,5 @@
 Dockerfile*
 docker-compose*
-.dockerignore
 .git
 .gitignore
 README.me
@@ -8,3 +7,6 @@ LICENSE
 .env.example
 .github
 CONTRIBUTING.md
+.prettierignore
+eslint.config.js
+prettier.config.js

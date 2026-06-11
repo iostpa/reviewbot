@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "src/*"
-      - "bun.lock"
+      - "pnpm-lock.yaml"
       - "package.json"
       - "Dockerfile"
 
