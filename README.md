@@ -4,7 +4,7 @@ This is the source code of the is-a.dev reviewbot! The bot uses [octokit.js](htt
 
 ## Requirements
 
-- Bun and Node.js
+- pnpm and Node.js
 - A GitHub App subscribed to **Pull Request**, **Workflow job** and **Workflow run** events with the following permissions:
   - Pull requests: Read & write
   - Metadata: Read-only
@@ -17,8 +17,8 @@ This is the source code of the is-a.dev reviewbot! The bot uses [octokit.js](htt
 ### Manual
 1. Clone this repository.
 2. Create a `.env` file similar to `.env.example` and set actual values.
-3. Install dependencies with `bun`.
-4. Start the server with `bun run server`.
+3. Install dependencies with `pnpm`.
+4. Start the server with `pnpm run server`.
 5. Ensure your server is reachable from the internet.
     - If you're using `smee`, run `smee -u <smee_url> -t http://localhost:3000/api/webhook`.
 6. Ensure your GitHub App includes at least one repository on its installations.
