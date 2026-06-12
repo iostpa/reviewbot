@@ -11,6 +11,10 @@ updates:
             applies-to: version-updates
             patterns:
                 - "*"
+      cooldown:
+          semver-major-days: 14 # Waits 14 days before updating major versions
+          semver-minor-days: 7  # Waits 7 days before updating minor versions
+          semver-patch-days: 3  # Waits 3 days before updating patch versions
 
     - package-ecosystem: "github-actions"
       target-branch: "main"
@@ -22,3 +26,7 @@ updates:
             applies-to: version-updates
             patterns:
                 - "*"
+      cooldown:
+          semver-major-days: 14 # Waits 14 days before updating major versions
+          semver-minor-days: 7  # Waits 7 days before updating minor versions
+          semver-patch-days: 3  # Waits 3 days before updating patch versions
