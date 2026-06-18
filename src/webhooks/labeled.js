@@ -18,6 +18,7 @@ const reasonLabels = [
     'reason: other',
     'reason: unauthorized',
     'reason: incompatible records',
+    'reason: tos non-compliant',
 ];
 const lowPriorityMessage = fs.readFileSync(
     path.join(import.meta.dirname, '../message/label/lowpriority.md'),
@@ -71,13 +72,19 @@ export async function labeled(
                     .replace(/reason:\s/i, '');
                 let finalReason = initialReason.replace(/\s+/g, '-');
                 let message = fs.readFileSync(
-                    path.join(import.meta.dirname, `../message/label/${finalReason}.md`),
+                    path.join(
+                        import.meta.dirname,
+                        `../message/label/${finalReason}.md`
+                    ),
                     'utf8'
                 );
                 allMessages.push(message);
             } else if (listOfLabels[i] === 'status: needs preview') {
                 let message = fs.readFileSync(
-                    path.join(import.meta.dirname, `../message/label/needs-preview.md`),
+                    path.join(
+                        import.meta.dirname,
+                        `../message/label/needs-preview.md`
+                    ),
                     'utf8'
                 );
                 allMessages.push(message);
