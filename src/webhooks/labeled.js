@@ -1,4 +1,4 @@
-import { pool } from '../index.js';
+import { db } from '../index.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -137,37 +137,32 @@ If you need any help, please create an issue or ask our team in the [Discord ser
             );
         }
     } else if (lowpriority === true) {
-        let conn;
-        try {
-            conn = await pool.getConnection();
-            let res = await conn.query(
-                `SELECT * FROM LIST WHERE username=(?)`,
-                [prUsername]
+        let res = await db
+            .prepare(`SELECT * FROM LIST WHERE username = ?;`)
+            .get(prUsername);
+        let resString = JSON.stringify(res);
+        if (resString === undefined) {
+            await appOctokit.rest.issues.createComment({
+                owner: repoOwner,
+                repo: repoName,
+                issue_number: prNumber,
+                body: lowPriorityMessage,
+            });
+            console.log(
+                `Sent low priority message to #${prNumber} from https://github.com/${repoFullName}`
             );
-            let resJson = JSON.stringify(res);
-            if (resJson === '[]') {
-                await appOctokit.rest.issues.createComment({
-                    owner: repoOwner,
-                    repo: repoName,
-                    issue_number: prNumber,
-                    body: lowPriorityMessage,
-                });
-                console.log(
-                    `Sent low priority message to #${prNumber} from https://github.com/${repoFullName}`
-                );
-                await conn.query('INSERT INTO LIST VALUES (?, ?, ?, ?, ?)', [
+            await db
+                .prepare(`INSERT INTO LIST VALUES (?, ?, ?, ?, ?);`)
+                .run(
                     prUsername,
-                    prNumber,
+                    `${prNumber}`,
                     prUpdatedAt,
                     repoOwner,
-                    repoName,
-                ]);
-                console.log(
-                    `Logged #${prNumber} from https://github.com/${repoFullName} to the low priority database.`
+                    repoName
                 );
-            }
-        } finally {
-            if (conn) conn.end();
+            console.log(
+                `Logged #${prNumber} from https://github.com/${repoFullName} to the low priority database.`
+            );
         }
     }
 }

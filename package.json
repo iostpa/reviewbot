@@ -1,7 +1,7 @@
 {
   "name": "reviewbot",
   "private": true,
-  "version": "1.5.2",
+  "version": "1.6.0",
   "type": "module",
   "description": "An app to assist in the review process of is-a-dev",
   "author": "iostpa",
@@ -12,8 +12,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.4.1",
-    "globals": "^17.6.0",
+    "eslint": "^10.6.0",
+    "globals": "^17.7.0",
     "prettier": "3.8.4",
     "smee-client": "^5.0.0"
   },
@@ -22,7 +22,8 @@
     "@octokit/auth-app": "^8.2.0",
     "@octokit/core": "^7.0.6",
     "@octokit/webhooks": "^14.2.0",
-    "@sentry/node": "^10.57.0",
+    "@sentry/node": "^10.62.0",
+    "better-sqlite3": "^12.11.1",
     "cron": "^4.4.0",
     "dotenv": "^17.4.2",
     "fastify": "^5.8.5",
