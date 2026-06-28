@@ -12,7 +12,7 @@ import { unlabeled } from './webhooks/unlabeled.js';
 import { opened } from './webhooks/opened.js';
 import { closed } from './webhooks/closed.js';
 import { labeled } from './webhooks/labeled.js';
-import { createPool } from 'mariadb';
+import Database from 'better-sqlite3';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -37,16 +37,18 @@ Sentry.init({
 });
 
 // Database
-// Following order of columns: username, prnumber, time, repoowner, repo
-export const pool = createPool({
-    user: process.env.SQL_USER,
-    password: process.env.SQL_PASSWORD,
-    host: process.env.SQL_HOST,
-    port: process.env.SQL_PORT,
-    database: process.env.SQL_DB_NAME,
-    ssl: false,
-    connectionLimit: 5,
-});
+
+export const db = new Database(process.env.DB_PATH);
+
+/*db.exec(`
+  CREATE TABLE LIST (
+    username TEXT NOT NULL,
+    prnumber TEXT NOT NULL,
+    time TEXT NOT NULL,
+    repoowner TEXT NOT NULL,
+    repo TEXT NOT NULL
+  );
+`);*/
 
 // Create an authenticated Octokit client authenticated as a GitHub App
 const app = new App({
@@ -83,18 +85,16 @@ let job = new CronJob(
     '0 * * * *', // cronTime 0 * * * *
     async function () {
         let date = new Date();
-        let conn;
         try {
-            conn = await pool.getConnection();
-            let res = await conn.query(`SELECT * FROM LIST`);
+            let res = await db.prepare(`SELECT * FROM LIST`).all();
             let resJson = JSON.stringify(res);
             if (resJson !== '[]') {
                 let parsed = JSON.parse(resJson);
                 for (let i in parsed) {
                     if (getNumberOfDays(parsed[i].time, date) >= numberOfDays) {
-                        await conn.query(`DELETE FROM LIST WHERE time=(?)`, [
-                            parsed[i].time,
-                        ]);
+                        await db
+                            .prepare(`DELETE FROM LIST WHERE time = ?`)
+                            .run(parsed[i].time);
                         await appOctokit.request(
                             'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
                             {
@@ -122,8 +122,6 @@ let job = new CronJob(
             } else {
                 console.error(error);
             }
-        } finally {
-            if (conn) conn.end();
         }
     }, // onTick
     null, // onComplete
@@ -139,6 +137,7 @@ app.webhooks.on('pull_request.opened', async ({ payload }) => {
             payload.repository.name,
             payload.repository.full_name,
             payload.pull_request.number,
+            payload.pull_request.updated_at,
             payload.pull_request.user.login,
             payload.pull_request.draft
         );
