@@ -76,7 +76,7 @@ export async function closed(
         }
 
         for (let i in listOfLabels) {
-            if (!listOfLabels.includes(unremovableLabels)) {
+            if (!unremovableLabels.includes(listOfLabels[i])) {
                 await appOctokit.request(
                     'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
                     {
@@ -86,13 +86,8 @@ export async function closed(
                         name: listOfLabels[i],
                     }
                 );
-            } else if (listOfLabels[i] == 'status: low priority') {
-                return;
             }
         }
-        console.log(
-            `Removed all labels from #${prNumber} on https://github.com/${repoFullName}`
-        );
     } else {
         let res = await db
             .prepare(`SELECT * FROM LIST WHERE username = ?;`)
