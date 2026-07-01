@@ -1,3 +1,10 @@
+/**
+ * Calculates the number of days between two dates.
+ *
+ * @param {string | Date} start - The start date.
+ * @param {string | Date} end - The end date.
+ * @returns {number} The number of days between the dates.
+ */
 export function getNumberOfDays(start, end) {
     const date1 = new Date(start);
     const date2 = new Date(end);
@@ -8,7 +15,7 @@ export function getNumberOfDays(start, end) {
     // Calculating the time difference between two dates
     const diffInTime = date2.getTime() - date1.getTime();
 
-    // Calculating the no. of days between two dates
+    // Calculating the number of days between two dates
     const diffInDays = Math.round(diffInTime / oneDay);
 
     return diffInDays;

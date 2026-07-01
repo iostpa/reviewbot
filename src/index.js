@@ -4,15 +4,18 @@ import path from 'path';
 import dotenv from 'dotenv';
 import middie from '@fastify/middie';
 import Fastify from 'fastify';
+import Database from 'better-sqlite3';
+
 import { App } from 'octokit';
 import { createNodeMiddleware } from '@octokit/webhooks';
 import { CronJob } from 'cron';
+
 import { getNumberOfDays } from './tools/numberofdays.js';
+
 import { unlabeled } from './webhooks/unlabeled.js';
 import { opened } from './webhooks/opened.js';
 import { closed } from './webhooks/closed.js';
 import { labeled } from './webhooks/labeled.js';
-import Database from 'better-sqlite3';
 
 // Load environment variables from .env file
 dotenv.config();

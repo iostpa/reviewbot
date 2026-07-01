@@ -1,7 +1,8 @@
-import { db, numberOfDays } from '../index.js';
-import { getNumberOfDays } from '../tools/numberofdays.js';
 import fs from 'fs';
 import path from 'path';
+
+import { db, numberOfDays } from '../index.js';
+import { getNumberOfDays } from '../tools/numberofdays.js';
 
 const ignoreLabels = ['maintainer'];
 const newPRs = fs.readFileSync(
