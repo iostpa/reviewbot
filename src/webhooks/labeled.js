@@ -115,7 +115,7 @@ ${labelMessages}
 If you believe this was a mistake, or if you need further clarification, please feel free to create an issue or reach out to our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150).
 
 `;
-            } else {
+            } else if (invalid) {
                 body = `
 # Invalid Pull Request
 
