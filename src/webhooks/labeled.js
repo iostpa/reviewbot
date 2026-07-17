@@ -100,9 +100,8 @@ export async function labeled(
                 path.join(import.meta.dirname, `../message/invalidnolabel.md`),
                 'utf8'
             );
-        } else {
-            if (denied) {
-                body = `
+        } else if (denied) {
+            body = `
 # Pull Request Denied
 
 This pull request has been denied due to the following reason(s):
@@ -115,8 +114,8 @@ ${labelMessages}
 If you believe this was a mistake, or if you need further clarification, please feel free to create an issue or reach out to our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150).
 
 `;
-            } else if (invalid) {
-                body = `
+        } else if (invalid) {
+            body = `
 # Invalid Pull Request
 
 This pull request is invalid due to the following reason(s):
@@ -129,7 +128,6 @@ ${labelMessages}
 If you need any help, please create an issue or ask our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150)
 
 `;
-            }
         }
         await appOctokit.rest.issues.createComment({
             owner: repoOwner,
