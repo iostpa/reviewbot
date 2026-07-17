@@ -5,7 +5,7 @@ import { db } from '../index.js';
 
 const reasonLabels = [
     'reason: abuse risk',
-    'reason: ai made',
+    'reason: ai generated pr',
     'reason: commercial usage',
     'reason: impersonation',
     'reason: inaccessible website',
