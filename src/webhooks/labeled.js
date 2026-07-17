@@ -49,7 +49,7 @@ export async function labeled(
     if (denied === true || invalid === true) {
         const listOfLabels = [];
         // timeout so that it creates a little time window for the maintainer to add the rest of the labels
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         const data = await appOctokit.request(
             'GET /repos/{owner}/{repo}/pulls/{pull_number}',
             {
@@ -100,7 +100,21 @@ export async function labeled(
                 path.join(import.meta.dirname, `../message/invalidnolabel.md`),
                 'utf8'
             );
-        } else {
+        } else if (denied) {
+            body = `
+# Pull Request Denied
+
+This pull request has been denied due to the following reason(s):
+
+---
+${labelMessages}
+
+---
+
+If you believe this was a mistake, or if you need further clarification, please feel free to create an issue or reach out to our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150).
+
+`;
+        } else if (invalid) {
             body = `
 # Invalid Pull Request
 
