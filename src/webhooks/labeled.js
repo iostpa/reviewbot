@@ -96,10 +96,17 @@ export async function labeled(
         const labelMessages = allMessages.join('\n\n');
         let body;
         if (!labelMessages.length) {
-            body = fs.readFileSync(
-                path.join(import.meta.dirname, `../message/invalidnolabel.md`),
-                'utf8'
-            );
+            if (denied) {
+                body = fs.readFileSync(
+                    path.join(import.meta.dirname, `../message/deniednolabel.md`),
+                    'utf8'
+                );
+            } else if (invalid) {
+                body = fs.readFileSync(
+                    path.join(import.meta.dirname, `../message/invalidnolabel.md`),
+                    'utf8'
+                );
+            }
         } else if (denied) {
             body = `
 # Pull Request Denied
