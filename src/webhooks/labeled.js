@@ -49,7 +49,7 @@ export async function labeled(
     if (denied === true || invalid === true) {
         const listOfLabels = [];
         // timeout so that it creates a little time window for the maintainer to add the rest of the labels
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         const data = await appOctokit.request(
             'GET /repos/{owner}/{repo}/pulls/{pull_number}',
             {
