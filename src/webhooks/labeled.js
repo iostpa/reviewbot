@@ -98,12 +98,18 @@ export async function labeled(
         if (!labelMessages.length) {
             if (denied) {
                 body = fs.readFileSync(
-                    path.join(import.meta.dirname, `../message/deniednolabel.md`),
+                    path.join(
+                        import.meta.dirname,
+                        `../message/deniednolabel.md`
+                    ),
                     'utf8'
                 );
             } else if (invalid) {
                 body = fs.readFileSync(
-                    path.join(import.meta.dirname, `../message/invalidnolabel.md`),
+                    path.join(
+                        import.meta.dirname,
+                        `../message/invalidnolabel.md`
+                    ),
                     'utf8'
                 );
             }
