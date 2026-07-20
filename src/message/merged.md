@@ -20,7 +20,7 @@ You may have to verify the domain so that you can successfully add the domain to
 
 ### Cloudflare Pages
 
-If you haven't done this by now, you need to add the is-a.dev domain to your Cloudflare Pages website. To do so, navigate to your settings for the website, click on "Custom domains", **click on "Add a custom domain" instead of the other option as it will make you use NS records so that the domain can be on Cloudflare DNS**, add the is-a.dev domain that you got and you are done!
+Cloudflare Pages can no longer be connected manually, please consider moving to a differnet hosting provider.
 
 ### Other hosting providers
 
