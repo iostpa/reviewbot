@@ -19,13 +19,15 @@ const reviewerUsernames = [
     'dragsbruh',
     'iostpa',
     'notamitgamer',
-    'omsenjalia',
     'orangci',
     'satr14washere',
     'Stef-00012',
-    'STICKnoLOGIC',
     'wdhdev',
     'Yunexiz',
+    'FWEEaaaa1',
+    'MaskDuck',
+    'ok-coder1',
+    'virtualWinter'
 ];
 
 export async function closed(
