@@ -1,4 +1,10 @@
 ## Low Priority
-This pull request has been marked as "low priority" by a maintainer. This means that maintainers will prioritise reviewing and merging other pull requests over this one. As such, you will have to wait a longer period of time than others in waiting for a PR review.
 
-**Why has my pull request been marked as low priority**? The most likely reason is that you were trying to get maintainers to review and merge your PR by pinging/mentioning them (perhaps even repeatedly) on Discord or another platform. We do not appreciate this type of behavior; we (the maintainers) are volunteers, and we try our best to keep up with and review PRs *at our own pace*. Please be considerate and wait patiently for a review without bugging maintainers the next time you make a pull request.
+This pull request has been marked as "low priority" by a maintainer. This means that maintainers will prioritise reviewing and merging other pull requests over this one. As such, you will have to wait a longer period (72 hours or more) of time than others in waiting for a PR review.
+
+**Why has my pull request been marked as low priority?** 
+
+The most likely reason is that you were trying to get maintainers to review and merge your PR by pinging/mentioning them (perhaps even repeatedly) on Discord or another platform. We do not appreciate this type of behavior; we (the maintainers) are volunteers, and we try our best to keep up with and review PRs *at our own pace*. Please be considerate and wait patiently for a review without bugging maintainers the next time you make a pull request.
+
+> [!WARNING]
+> Attempting to bypass this penalty by opening a new pull request will not work. The bot will automatically apply the low-priority label to any new pull requests you make while this penalty is active.
