@@ -61,24 +61,28 @@ export async function opened(
             `Sent a opened message to #${prNumber} on https://github.com/${repoFullName}`
         );
     }
+    
     // low priority check
+    // Use .all() instead of .get() to fetch all of the user's active low-priority PRs
     let res = await db
         .prepare(`SELECT * FROM LIST WHERE username = ?;`)
-        .get(prUsername);
-    if (res !== undefined) {
-        let resJson = JSON.stringify(res);
-        let parsed = JSON.parse(resJson);
+        .all(prUsername);
+
+    if (res && res.length > 0) {
+        // Since all rows inherit the same time, we can just check the first one
+        let firstRecord = res[0]; 
         let date = new Date();
+
         if (
-            parsed.username === prUsername &&
-            getNumberOfDays(parsed.time, date) <= numberOfDays
+            firstRecord.username === prUsername &&
+            getNumberOfDays(firstRecord.time, date) <= numberOfDays
         ) {
             let lowPriority = `
 # Low priority
 
-You're attempting to create a new pull request to bypass the low priority label placed on your previous pull request, #${parsed.prnumber}. Unfortunately, we've noticed this attempt, and we're applying the label you were trying to escape on this pull request, too.
+You're attempting to create a new pull request to bypass the low priority label placed on your previous pull request, #${firstRecord.prnumber}. Unfortunately, we've noticed this attempt, and we're applying the label you were trying to escape on this pull request, too.
 
-If you think this is a mistake then please contact [iostpa](https://github.com/iostpa).   
+If you believe this was a mistake, or if you need further clarification, please feel free to reach out to our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150). 
         `;
             await appOctokit.request(
                 'POST /repos/{owner}/{repo}/issues/{issue_number}/labels',
@@ -96,35 +100,42 @@ If you think this is a mistake then please contact [iostpa](https://github.com/i
                 body: lowPriority,
             });
             await db
-                .prepare(`UPDATE LIST SET prnumber = ? WHERE prnumber = ?;`)
-                .run(`${prNumber}`, `${parsed.prnumber}`);
-            await db
-                .prepare(`UPDATE LIST SET time = ? WHERE prnumber = ?;`)
-                .run(prCreatedAt, `${prNumber}`);
+                .prepare(`INSERT INTO LIST VALUES (?, ?, ?, ?, ?);`)
+                .run(
+                    prUsername,
+                    `${prNumber}`,
+                    firstRecord.time, // Inherit the original timer so it doesn't reset
+                    repoOwner,
+                    repoName
+                );
             console.log(
-                `Auto-added, replaced with new PR number and sent low priority message to #${prNumber} on https://github.com/${repoFullName} because it was found in the database.`
+                `Auto-added new PR number and sent low priority message to #${prNumber} on https://github.com/${repoFullName} because active penalty was found in the database.`
             );
         } else if (
-            parsed.username === prUsername &&
-            getNumberOfDays(parsed.time, date) >= numberOfDays
+            firstRecord.username === prUsername &&
+            getNumberOfDays(firstRecord.time, date) >= numberOfDays
         ) {
-            await appOctokit.request(
-                'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
-                {
-                    owner: repoOwner,
-                    repo: repoName,
-                    issue_number: prNumber,
-                    name: 'status: low priority',
-                }
-            );
+            // The penalty is over! Loop through and remove labels from ALL old PRs
+            for (let record of res) {
+                await appOctokit.request(
+                    'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
+                    {
+                        owner: record.repoowner,
+                        repo: record.repo,
+                        issue_number: record.prnumber,
+                        name: 'status: low priority',
+                    }
+                );
+            }
+            
+            // Now that labels are removed, it is safe to delete them from the database
             await db
                 .prepare(`DELETE FROM LIST WHERE username = ?;`)
-                .run(parsed.username);
+                .run(prUsername);
+                
             console.log(
-                `Removed #${prNumber} from https://github.com/${repoFullName} from the low priority database as well as the label.`
+                `Penalty expired. Removed low priority labels from all previous PRs for ${prUsername} and cleared database.`
             );
         }
-    } else if (res === undefined) {
-        return;
     }
 }
