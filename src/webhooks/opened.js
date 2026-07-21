@@ -115,7 +115,7 @@ If you believe this was a mistake, or if you need further clarification, please 
             firstRecord.username === prUsername &&
             getNumberOfDays(firstRecord.time, date) >= numberOfDays
         ) {
-            // The penalty is over! Loop through and remove labels from ALL old PRs
+            // The penalty is over. Loop through and remove labels from ALL old PRs
             for (let record of res) {
                 await appOctokit.request(
                     'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
