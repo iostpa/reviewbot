@@ -96,8 +96,8 @@ let job = new CronJob(
                 for (let i in parsed) {
                     if (getNumberOfDays(parsed[i].time, date) >= numberOfDays) {
                         await db
-                            .prepare(`DELETE FROM LIST WHERE time = ?`)
-                            .run(parsed[i].time);
+                            .prepare(`DELETE FROM LIST WHERE prnumber = ?`)
+                            .run(parsed[i].prnumber);
                         await appOctokit.request(
                             'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
                             {
