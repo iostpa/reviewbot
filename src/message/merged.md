@@ -20,7 +20,7 @@ You may have to verify the domain so that you can successfully add the domain to
 
 ### Cloudflare Pages
 
-Cloudflare Pages can no longer be connected manually, please consider moving to a differnet hosting provider.
+Please read [this section](https://docs.is-a.dev/guides/cloudflare-pages/#adding-the-domain-to-cloudflare-pages) of our documentation.
 
 ### Other hosting providers
 
