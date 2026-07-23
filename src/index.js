@@ -5,13 +5,10 @@ import dotenv from 'dotenv';
 import middie from '@fastify/middie';
 import Fastify from 'fastify';
 import Database from 'better-sqlite3';
-
 import { App } from 'octokit';
 import { createNodeMiddleware } from '@octokit/webhooks';
 import { CronJob } from 'cron';
-
 import { getNumberOfDays } from './tools/numberofdays.js';
-
 import { unlabeled } from './webhooks/unlabeled.js';
 import { opened } from './webhooks/opened.js';
 import { closed } from './webhooks/closed.js';
@@ -29,6 +26,7 @@ const privateKey = fs.readFileSync(
     'utf8'
 );
 const secret = process.env.WEBHOOK_SECRET;
+
 export const numberOfDays = 3;
 
 Sentry.init({
@@ -40,7 +38,6 @@ Sentry.init({
 });
 
 // Database
-
 export const db = new Database(process.env.DB_PATH);
 
 /*db.exec(`
@@ -66,7 +63,6 @@ const appOctokit = await app.getInstallationOctokit(installationId);
 
 /*
 saving this for incase
-
 const installationOctokit = new Octokit({
     authStrategy: createAppAuth,
     auth: {
@@ -79,7 +75,6 @@ const installationOctokit = new Octokit({
 
 // Get & log the authenticated app's name
 const { data } = await app.octokit.request('/app');
-
 // https://github.com/octokit/core.js#logging
 app.octokit.log.debug(`Authenticated as '${data.name}'`);
 
@@ -91,6 +86,7 @@ let job = new CronJob(
         try {
             let res = await db.prepare(`SELECT * FROM LIST`).all();
             let resJson = JSON.stringify(res);
+
             if (resJson !== '[]') {
                 let parsed = JSON.parse(resJson);
                 for (let i in parsed) {
@@ -215,9 +211,12 @@ app.webhooks.on('pull_request.labeled', async ({ payload }) => {
 app.webhooks.on('pull_request.unlabeled', async ({ payload }) => {
     try {
         await unlabeled(
+            appOctokit, // Passed appOctokit
             payload.label.name,
             payload.pull_request.user.login,
             payload.pull_request.number,
+            payload.repository.owner.login, // Passed repoOwner
+            payload.repository.name, // Passed repoName
             payload.repository.full_name
         );
     } catch (error) {
@@ -253,15 +252,14 @@ const localWebhookUrl = `http://${host}:${port}${webhookPath}`;
 
 // https://github.com/octokit/webhooks.js/#createnodemiddleware
 const middleware = createNodeMiddleware(app.webhooks, { path: webhookPath });
-
 const fastify = Fastify({
     logger: false,
 });
+
 await fastify.register(middie);
 fastify.use(middleware);
 
 await fastify.listen({ port, host });
-
 console.log(`Server is listening for events at: ${localWebhookUrl}`);
 console.log('Press Ctrl + C to quit.');
 
