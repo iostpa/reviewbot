@@ -3,3 +3,5 @@
 This pull request has been denied. Unfortunately the reviewer didn't specify what is wrong with the pull request.
 
 If you believe this was a mistake, or if you need further clarification, please feel free to create an issue or reach out to our team in the [Discord server](https://discord.gg/is-a-dev-830872854677422150).
+
+> If you have any questions about the bot, please contact **iostpa** on [Discord](https://discord.com/users/716306888492318790) or [GitHub](https://github.com/iostpa).
