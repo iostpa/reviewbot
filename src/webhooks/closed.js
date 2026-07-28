@@ -8,11 +8,9 @@ const mergedPRs = fs.readFileSync(
     path.join(import.meta.dirname, '../message/merged.md'),
     'utf8'
 );
-const unremovableLabels = [
-    'maintainer',
-    'ci: bypass-owner-check',
-    'no-stale',
-    'r: william',
+const removableLabelPrefixes = [
+    'status:',
+    'reason:',
 ];
 const reviewerUsernames = [
     'DEV-DIBSTER',
@@ -78,15 +76,15 @@ export async function closed(
             }
         }
 
-        for (let i in listOfLabels) {
-            if (!unremovableLabels.includes(listOfLabels[i])) {
+        for (const label of listOfLabels) {
+            if (removableLabelPrefixes.some(prefix => label.startsWith(prefix))) {
                 await appOctokit.request(
                     'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
                     {
                         owner: repoOwner,
                         repo: repoName,
                         issue_number: prNumber,
-                        name: listOfLabels[i],
+                        name: label,
                     }
                 );
             }
