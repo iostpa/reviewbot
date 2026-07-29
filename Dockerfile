@@ -13,6 +13,8 @@ RUN pnpm fetch --prod
 COPY . .
 
 FROM base
-COPY --from=prod /app/node_modules ./node_modules
-COPY --from=prod /app/src ./src
-CMD ["node", "src"]
+WORKDIR /app
+COPY --from=prod /app/node_modules /app/node_modules
+COPY --from=prod /app/src /app/src
+COPY --from=prod /app/package.json /app/package.json
+CMD ["pnpm", "run", "server"]
