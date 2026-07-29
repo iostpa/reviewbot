@@ -1,4 +1,2 @@
 allowBuilds:
   better-sqlite3: true
-minimumReleaseAgeExclude:
-  - better-sqlite3@13.0.2
