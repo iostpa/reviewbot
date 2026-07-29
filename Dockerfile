@@ -14,6 +14,6 @@ COPY . .
 
 FROM base
 WORKDIR /app
-COPY --from=prod /app/node_modules /app/node_modules
-COPY --from=prod /app/src /app/src
+COPY --from=prod /app/node_modules ./
+COPY --from=prod /app/src ./
 CMD ["node", "src"]
