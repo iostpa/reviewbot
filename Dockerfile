@@ -10,7 +10,7 @@ COPY pnpm-lock.yaml /app
 WORKDIR /app
 RUN pnpm fetch --prod
 
-COPY . /app
+COPY . .
 
 FROM base
 COPY --from=prod /app/node_modules /app/node_modules
