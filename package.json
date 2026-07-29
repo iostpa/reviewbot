@@ -29,5 +29,12 @@
     "fastify": "^5.10.0",
     "mariadb": "^3.5.3",
     "octokit": "^5.0.5"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.x",
+      "onFail": "download"
+    }
   }
 }

@@ -1,6 +1,6 @@
 FROM ghcr.io/pnpm/pnpm:11
-RUN pnpm runtime set node 26 -g
 WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN pnpm install
 CMD ["pnpm", "run", "server"]
