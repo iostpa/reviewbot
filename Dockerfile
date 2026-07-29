@@ -13,7 +13,6 @@ RUN pnpm approve-builds --all
 RUN --mount=type=cache,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod --offline
 COPY . .
-RUN pnpm build
 FROM node:lts AS runtime
 RUN groupadd -g 1001 appgroup && \
     useradd -u 1001 -g appgroup -m -d /app -s /bin/false appuser
