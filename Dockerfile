@@ -8,8 +8,8 @@ WORKDIR /app
 COPY pnpm-lock.yaml ./
 RUN --mount=type=cache,target=/pnpm/store \
     pnpm fetch
-RUN pnpm approve-builds --all
 COPY package.json ./
+RUN pnpm approve-builds --all
 RUN --mount=type=cache,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod --offline
 COPY . .
