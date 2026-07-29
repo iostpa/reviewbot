@@ -1,19 +1,6 @@
-FROM node:24-slim AS base
-
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME/bin:$PATH"
-RUN corepack enable
-
-FROM base AS prod
-
+FROM node:lts
 WORKDIR /app
-COPY pnpm-lock.yaml ./
-RUN pnpm fetch --prod
-
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
-
-FROM base
-WORKDIR /app
-COPY --from=prod /app/node_modules .
-COPY --from=prod /app/src .
-CMD ["node", "src"]
+CMD ["npm", "run", "server"]

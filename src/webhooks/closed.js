@@ -8,10 +8,7 @@ const mergedPRs = fs.readFileSync(
     path.join(import.meta.dirname, '../message/merged.md'),
     'utf8'
 );
-const removableLabelPrefixes = [
-    'status:',
-    'reason:',
-];
+const removableLabelPrefixes = ['status:', 'reason:'];
 const reviewerUsernames = [
     'DEV-DIBSTER',
     'dragsbruh',
@@ -25,7 +22,7 @@ const reviewerUsernames = [
     'FWEEaaaa1',
     'MaskDuck',
     'ok-coder1',
-    'virtualWinter'
+    'virtualWinter',
 ];
 
 export async function closed(
@@ -77,7 +74,11 @@ export async function closed(
         }
 
         for (const label of listOfLabels) {
-            if (removableLabelPrefixes.some(prefix => label.startsWith(prefix))) {
+            if (
+                removableLabelPrefixes.some((prefix) =>
+                    label.startsWith(prefix)
+                )
+            ) {
                 await appOctokit.request(
                     'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
                     {

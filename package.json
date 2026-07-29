@@ -8,7 +8,7 @@
   "scripts": {
     "server": "node src",
     "lint": "eslint src",
-    "prettier": "pnx prettier src --write"
+    "prettier": "npx prettier src --write"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
