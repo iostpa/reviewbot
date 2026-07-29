@@ -1,4 +1,4 @@
-# taken from https://depot.dev/docs/container-builds/optimal-dockerfiles/node-pnpm-dockerfile
+# taken from https://depot.dev/docs/container-builds/optimal-dockerfiles/node-pnpm-dockerfile with some modifications
 # syntax=docker/dockerfile:1
 FROM node:lts AS build
 RUN corepack enable
@@ -8,6 +8,7 @@ WORKDIR /app
 COPY pnpm-lock.yaml ./
 RUN --mount=type=cache,target=/pnpm/store \
     pnpm fetch
+RUN pnpm approve-builds --all
 COPY package.json ./
 RUN --mount=type=cache,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod --offline
