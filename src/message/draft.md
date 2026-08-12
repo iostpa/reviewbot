@@ -11,4 +11,9 @@ You've successfully made a pull request! Here are some steps to do while waiting
 4. Please wait patiently. Pull requests may take between a couple hours to 3 days. All of the maintainer team are volunteers and try to review the pull requests in their spare time.
 5. Please note that mentioning maintainers in pull requests without it being reviewed could lead to you getting marked as "low priority"; this also applies to pinging the maintainers in the Discord server or messaging the maintainers in private to review the pull request.
 
-Note: if you've opened this pull request while there is a high number of other open pull requests, your wait time will be longer than usual. Please be patient!
+> [!NOTE]
+> If you've opened this pull request while there is a high number of other open pull requests, your wait time will be longer than usual. Please be patient!
+
+> [!TIP]
+> We have recently launched another free subdomain service, [**is-a.bot**](https://is-a.bot).
+> Claim your subdomain on is-a.bot on the [GitHub repository](https://github.com/free-domains/is-a.bot).
