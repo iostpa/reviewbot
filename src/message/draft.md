@@ -14,6 +14,7 @@ You've successfully made a pull request! Here are some steps to do while waiting
 > [!NOTE]
 > If you've opened this pull request while there is a high number of other open pull requests, your wait time will be longer than usual. Please be patient!
 
-> [!TIP]
-> We have recently launched another free subdomain service, [**is-a.bot**](https://is-a.bot).
-> Claim your subdomain on is-a.bot on the [GitHub repository](https://github.com/free-domains/is-a.bot).
+> [!NOTE]
+> We have recently launched another free subdomain service, [**is-a.bot**](https://is-a.bot)!
+> 
+> Claim your `.is-a.bot` subdomain on [GitHub](https://github.com/free-domains/is-a.bot).
