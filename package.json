@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.8.0",
+    "eslint": "^10.8.1",
     "globals": "^17.9.0",
     "prettier": "3.9.6",
     "smee-client": "^5.0.0"
@@ -23,10 +23,10 @@
     "@octokit/core": "^7.0.7",
     "@octokit/webhooks": "^14.2.0",
     "@sentry/node": "^10.69.0",
-    "better-sqlite3": "^13.0.2",
+    "better-sqlite3": "^13.0.3",
     "cron": "^4.4.0",
     "dotenv": "^17.4.2",
-    "fastify": "^5.11.2",
+    "fastify": "^5.11.3",
     "mariadb": "^3.5.3",
     "octokit": "^5.0.5"
   },
