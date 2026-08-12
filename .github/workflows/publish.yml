@@ -9,6 +9,7 @@ on:
       - "package-lock.json"
       - "package.json"
       - "Dockerfile"
+      - "message/*"
 
 jobs:
   Deploy:
