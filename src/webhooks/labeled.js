@@ -46,10 +46,10 @@ export async function labeled(
         lowpriority = true;
     }
 
-    if (denied === true || invalid === true) {
+    if (denied || invalid) {
         const listOfLabels = [];
-        // timeout so that it creates a little time window for the maintainer to add the rest of the labels
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        // timeout so that it creates a little time window for the reviewer to add the rest of the labels
+        await new Promise((resolve) => setTimeout(resolve, 20000));
         const data = await appOctokit.request(
             'GET /repos/{owner}/{repo}/pulls/{pull_number}',
             {
@@ -91,6 +91,37 @@ export async function labeled(
                 );
                 allMessages.push(message);
             }
+        }
+
+        // Delete any existing denial/invalid comments previously posted by the bot
+        try {
+            const existingComments = await appOctokit.rest.issues.listComments({
+                owner: repoOwner,
+                repo: repoName,
+                issue_number: prNumber,
+            });
+
+            const botComments = existingComments.data.filter(
+                (comment) =>
+                    comment.body.includes('# Pull Request Denied') ||
+                    comment.body.includes('# Invalid Pull Request')
+            );
+
+            for (const comment of botComments) {
+                await appOctokit.rest.issues.deleteComment({
+                    owner: repoOwner,
+                    repo: repoName,
+                    comment_id: comment.id,
+                });
+                console.log(
+                    `Deleted outdated bot comment ${comment.id} on #${prNumber}.`
+                );
+            }
+        } catch (error) {
+            console.error(
+                `Failed to cleanup old comments on PR #${prNumber}:`,
+                error
+            );
         }
 
         const labelMessages = allMessages.join('\n\n');

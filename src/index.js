@@ -84,7 +84,7 @@ const { data } = await app.octokit.request('/app');
 app.octokit.log.debug(`Authenticated as '${data.name}'`);
 
 // Check if a low priority pull request has been in the database for over 3 days
-let job = new CronJob(
+new CronJob(
     '0 * * * *', // cronTime 0 * * * *
     async function () {
         let date = new Date();
@@ -96,8 +96,8 @@ let job = new CronJob(
                 for (let i in parsed) {
                     if (getNumberOfDays(parsed[i].time, date) >= numberOfDays) {
                         await db
-                            .prepare(`DELETE FROM LIST WHERE time = ?`)
-                            .run(parsed[i].time);
+                            .prepare(`DELETE FROM LIST WHERE prnumber = ?`)
+                            .run(parsed[i].prnumber);
                         await appOctokit.request(
                             'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
                             {
@@ -170,8 +170,7 @@ app.webhooks.on('pull_request.closed', async ({ payload }) => {
             payload.repository.name,
             payload.repository.full_name,
             payload.pull_request.number,
-            payload.pull_request.user.login,
-            payload.sender.login
+            payload.pull_request.user.login
         );
     } catch (error) {
         Sentry.captureException(error);
