@@ -1,29 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 
-import { db } from '../index.js';
-
 const ignoreLabels = ['maintainer'];
 const mergedPRs = fs.readFileSync(
     path.join(import.meta.dirname, '../message/merged.md'),
     'utf8'
 );
 const removableLabelPrefixes = ['status:', 'reason:'];
-const reviewerUsernames = [
-    'DEV-DIBSTER',
-    'dragsbruh',
-    'iostpa',
-    'notamitgamer',
-    'orangci',
-    'satr14washere',
-    'Stef-00012',
-    'wdhdev',
-    'Yunexiz',
-    'FWEEaaaa1',
-    'MaskDuck',
-    'ok-coder1',
-    'virtualWinter',
-];
 
 export async function closed(
     appOctokit,
@@ -32,10 +15,21 @@ export async function closed(
     repoName,
     repoFullName,
     prNumber,
-    prUsername,
-    prSender
+    prUsername
 ) {
     if (prMerged === true) {
+        const rawTrustedUsers = await fetch(
+            'https://raw.githubusercontent.com/is-a-dev/register/refs/heads/main/util/trusted.json'
+        );
+        const trustedUsers = await rawTrustedUsers.json();
+        for (let i in trustedUsers) {
+            if (prUsername === trustedUsers[i].username) {
+                console.log(
+                    `#${prNumber} from https://github.com/${repoFullName} is by a trusted user, skipping pull request.`
+                );
+                return;
+            }
+        }
         const labels = await appOctokit.rest.issues.listLabelsOnIssue({
             owner: repoOwner,
             repo: repoName,
@@ -87,31 +81,6 @@ export async function closed(
                         issue_number: prNumber,
                         name: label,
                     }
-                );
-            }
-        }
-    } else {
-        let res = await db
-            .prepare(`SELECT * FROM LIST WHERE username = ?;`)
-            .get(prUsername);
-        if (res !== undefined) {
-            let resJson = JSON.stringify(res);
-            let parsed = JSON.parse(resJson);
-            if (reviewerUsernames.includes(prSender)) {
-                await db
-                    .prepare(`DELETE FROM LIST WHERE username = ?;`)
-                    .run(parsed.username);
-                await appOctokit.request(
-                    'DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}',
-                    {
-                        owner: repoOwner,
-                        repo: repoName,
-                        issue_number: prNumber,
-                        name: 'status: low priority',
-                    }
-                );
-                console.log(
-                    `Removed #${prNumber} from https://github.com/${repoFullName} from the low priority database as well as the label.`
                 );
             }
         }

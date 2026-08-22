@@ -6,6 +6,9 @@ Just follow the steps below and you can start using your domain!
 
 ### GitHub Pages
 
+> [!ALERT]
+> It is wise to verify your is-a.dev domain with GitHub, in order to combat the chances of your domain being vulnerable to a subdomain takeover. Please check our documentation [here](https://docs.is-a.dev/guides/github-pages/#verifying-your-is-adev-subdomain-with-github-pages) on how to do that.
+
 1. Navigate to your GitHub Pages repository that you want to connect with your is-a.dev domain.
 2. Click on the Settings tab.
 3. Click on the Pages link in the sidebar.

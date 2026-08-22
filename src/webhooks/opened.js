@@ -28,6 +28,18 @@ export async function opened(
     console.log(
         `Received a open pull request event for #${prNumber} on https://github.com/${repoFullName}`
     );
+    const rawTrustedUsers = await fetch(
+        'https://raw.githubusercontent.com/is-a-dev/register/refs/heads/main/util/trusted.json'
+    );
+    const trustedUsers = await rawTrustedUsers.json();
+    for (let i in trustedUsers) {
+        if (prUsername === trustedUsers[i].username) {
+            console.log(
+                `#${prNumber} from https://github.com/${repoFullName} is by a trusted user, skipping pull request.`
+            );
+            return;
+        }
+    }
     const labels = await appOctokit.rest.issues.listLabelsOnIssue({
         owner: repoOwner,
         repo: repoName,
