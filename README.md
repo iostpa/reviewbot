@@ -4,7 +4,7 @@ This is the source code of the is-a.dev reviewbot! The bot uses [octokit.js](htt
 
 ## Requirements
 
-- pnpm and Node.js
+- npm and Node.js
 - A GitHub App subscribed to **Pull Request**, **Workflow job** and **Workflow run** events with the following permissions:
   - Pull requests: Read & write
   - Metadata: Read-only
