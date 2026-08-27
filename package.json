@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "eslint": "^10.9.0",
+    "eslint": "^10.9.1",
     "globals": "^17.9.0",
     "prettier": "3.9.6",
     "smee-client": "^5.0.0"
