@@ -19,15 +19,15 @@
   },
   "dependencies": {
     "@fastify/middie": "^9.3.3",
-    "@octokit/auth-app": "^8.3.0",
+    "@octokit/auth-app": "^8.3.1",
     "@octokit/core": "^7.0.8",
     "@octokit/webhooks": "^14.2.0",
-    "@sentry/node": "^10.72.0",
+    "@sentry/node": "^10.73.0",
     "better-sqlite3": "^13.0.3",
     "cron": "^4.4.0",
     "dotenv": "^17.4.2",
     "fastify": "^5.12.1",
-    "mariadb": "^3.5.3",
+    "mariadb": "^3.5.4",
     "octokit": "^5.0.5"
   },
   "allowScripts": {
