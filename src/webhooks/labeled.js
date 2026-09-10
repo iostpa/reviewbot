@@ -21,6 +21,7 @@ const reasonLabels = [
     'reason: unauthorized',
     'reason: incompatible records',
     'reason: tos non-compliant',
+    'reason: not a use case'
 ];
 const lowPriorityMessage = fs.readFileSync(
     path.join(import.meta.dirname, '../message/label/lowpriority.md'),
