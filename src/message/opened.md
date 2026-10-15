@@ -4,7 +4,7 @@ You've successfully made a pull request! Here are some steps to do while waiting
 
 1. Check if the checks have failed or passed. You should see the status at the bottom of the pull request or a icon next to the commit ID. You can click on the 3 dots next to the "CI / Tests" check then click "View details", it will show you the logs of the tests.
 2. Check if the filename, file format, and records are valid. If you don't know if it's valid, please read [this part](https://docs.is-a.dev/domain-structure) of the documentation and use a JSON validator/formatter, like [jsonlint](https://jsonlint.com). Make sure that the file is in the `domains` directory and not somewhere else in the repository.
-3. Please make sure that you've filled out the pull request template. It is generally not a good idea to overwrite the pull request template with something else unless you know what you are doing. Make sure to add a publicly available preview link of your website (not a screenshot, as stated in the pull request template).
+3. Please make sure that you've filled out the pull request template. It is generally not a good idea to overwrite the pull request template with something else unless you know what you are doing. Make sure to add a publicly available preview link of your website.
 4. Please wait patiently. Pull requests may take between a couple hours to 3 days. All of the maintainer team are volunteers and try to review the pull requests in their spare time.
 5. Please note that mentioning maintainers in pull requests without it being reviewed could lead to you getting marked as "low priority"; this also applies to pinging the maintainers in the Discord server or messaging the maintainers in private to review the pull request.
 
