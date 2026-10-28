@@ -7,9 +7,9 @@ Just follow the steps below and you can start using your domain!
 ### GitHub Pages
 
 > [!CAUTION]
-> It is wise to verify your is-a.dev domain with GitHub, in order to combat the chances of your domain being vulnerable to a subdomain takeover. Please check our documentation [here](https://docs.is-a.dev/guides/github-pages/#verifying-your-is-adev-subdomain-with-github-pages) on how to do that.
+> It is wise to verify your domain with GitHub, in order to combat the chances of your domain being vulnerable to a subdomain takeover. Please check our documentation [here](https://docs.is-a.dev/guides/github-pages/#verifying-your-is-adev-subdomain-with-github-pages) on how to do that.
 
-1. Navigate to your GitHub Pages repository that you want to connect with your is-a.dev domain.
+1. Navigate to your GitHub Pages repository that you want to connect with your domain.
 2. Click on the Settings tab.
 3. Click on the Pages link in the sidebar.
 4. In the custom domain option, enter the domain you registered.
@@ -36,4 +36,4 @@ You have to add these in your webserver config by yourself. If you don't know ho
 Need help with your domain? If you have some trouble setting up your domain, please create an issue or ask in the [Discord server](https://discord.gg/is-a-dev-830872854677422150) and we will try and help you as soon as possible!
 Made a mistake in the records? Don't worry, you can create a new pull request to correct your mistakes.
 
-Thanks for reading the message and thank you for using is-a.dev! :heart:
+Thanks for reading the message and thank you for using our service! :heart:
